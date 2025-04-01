@@ -1,12 +1,10 @@
 "use client"; // Required for using hooks like useState or zustand stores
 
 import { Button, Card } from "@repo/ui"; // Import our UI components
-import { useUserStore } from "../stores/useUserStore"; // Import user store
 import { useProposalsStore } from "../stores/useProposalsStore"; // Import proposal store
 import Link from "next/link"; // Import Link
 
-export default function HomePage(): JSX.Element {
-  const { keyPair, generateAndSetKeyPair, isLoadingKeyPair } = useUserStore();
+export default function HomePage() {
   const { proposals } = useProposalsStore();
 
   return (

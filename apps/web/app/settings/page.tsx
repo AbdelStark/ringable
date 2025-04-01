@@ -5,7 +5,7 @@ import { Button, Card, Input } from "@repo/ui";
 import { useUserStore } from "../../stores/useUserStore";
 import Link from "next/link"; // For navigation
 
-export default function SettingsPage(): JSX.Element {
+export default function SettingsPage() {
   const { keyPair, generateAndSetKeyPair, isLoadingKeyPair, setKeyPair } = useUserStore();
   const [copied, setCopied] = React.useState(false);
   const [showPrivateKeyInput, setShowPrivateKeyInput] = React.useState(false);

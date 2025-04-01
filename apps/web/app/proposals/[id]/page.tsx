@@ -39,7 +39,7 @@ import { type VoteRecord } from "../../../stores/types";
 //   }
 // }
 
-export default function ProposalDetailsPage(): JSX.Element {
+export default function ProposalDetailsPage() {
   const params = useParams();
   const proposalId = params.id as string;
 
@@ -51,7 +51,6 @@ export default function ProposalDetailsPage(): JSX.Element {
   const ring = getRingById(proposal?.ringId ?? "");
 
   const [voteCounts, setVoteCounts] = React.useState<Record<string, number>>({});
-  const [userVote, setUserVote] = React.useState<VoteRecord | null>(null);
   const [eligibility, setEligibility] = React.useState<{ eligible: boolean, reason: string }>({ eligible: false, reason: "Checking eligibility..." });
   const [isVoting, setIsVoting] = React.useState(false);
   const [isLoadingResults, setIsLoadingResults] = React.useState(false);
@@ -84,7 +83,6 @@ export default function ProposalDetailsPage(): JSX.Element {
           console.warn("MOCK: Cannot reliably check for prior vote. Assuming not voted.");
       }
 
-      setUserVote(foundVote);
       if (foundVote) {
         setEligibility({ eligible: false, reason: "You have already voted on this proposal." });
       } else if (proposal.status === 'closed') {
@@ -95,7 +93,7 @@ export default function ProposalDetailsPage(): JSX.Element {
     };
     void checkVote();
 
-  }, [proposal, ring, keyPair, proposalId]); // proposal.votes removed as dep for mock
+  }, [proposal, ring, keyPair]); // proposal.votes removed as dep for mock
 
   // Effect to fetch results
   React.useEffect(() => {

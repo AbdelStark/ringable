@@ -7,7 +7,7 @@ import { useUserStore } from "../../stores/useUserStore"; // To optionally add o
 import Link from "next/link";
 import { type Ring } from "../../stores/types";
 
-export default function RingsPage(): JSX.Element {
+export default function RingsPage() {
   const { rings, addRing, updateRing, removeRing } = useRingStore();
   const { keyPair } = useUserStore(); // Get user's own keypair
 

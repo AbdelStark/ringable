@@ -7,7 +7,7 @@ import { useProposalsStore } from "../../../stores/useProposalsStore";
 import Link from "next/link";
 import { useRouter } from 'next/navigation'; // To redirect after creation
 
-export default function NewProposalPage(): JSX.Element {
+export default function NewProposalPage() {
   const { rings } = useRingStore();
   const { createProposal } = useProposalsStore();
   const router = useRouter();
