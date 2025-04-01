@@ -9,6 +9,36 @@ import Link from "next/link";
 import { useParams } from 'next/navigation';
 import { type VoteRecord } from "../../../stores/types";
 
+// Note: Stores are client-side. For server-side metadata generation,
+// you'd typically fetch proposal data from an API or DB.
+// Since this app is client-only, we CANNOT dynamically generate
+// metadata on the server based on the specific proposal ID using stores.
+// The metadata generation would need a different data source or be static.
+
+// Placeholder for dynamic metadata if data source existed
+// export async function generateMetadata(
+//   { params }: { params: { id: string } },
+//   parent: ResolvingMetadata
+// ): Promise<Metadata> {
+//   const proposalId = params.id;
+//   // Fetch proposal data based on ID here (e.g., from API)
+//   // const proposal = await fetchProposalById(proposalId);
+//   const proposal = { title: `Proposal ${proposalId}`, description: `Vote on proposal ${proposalId}` }; // Placeholder
+//
+//   // optionally access and extend (rather than replace) parent metadata
+//   // const previousImages = (await parent).openGraph?.images || []
+//
+//   return {
+//     title: proposal.title,
+//     description: proposal.description,
+//     openGraph: {
+//       title: proposal.title,
+//       description: proposal.description,
+//       // images: ['/some-specific-page-image.jpg', ...previousImages],
+//     },
+//   }
+// }
+
 export default function ProposalDetailsPage(): JSX.Element {
   const params = useParams();
   const proposalId = params.id as string;

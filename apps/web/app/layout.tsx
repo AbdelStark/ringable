@@ -12,9 +12,49 @@ const pressStart2P = Press_Start_2P({
   display: "swap", // Use swap for better performance
 });
 
+// Replace with your actual deployed domain
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://YOUR_DOMAIN.com';
+const defaultTitle = "Ringable - Anonymous Voting";
+const defaultDescription = "A client-side anonymous voting platform using ring signatures.";
+
 export const metadata: Metadata = {
-  title: "Ringable - Anonymous Voting",
-  description: "Anonymous voting platform using ring signatures",
+  metadataBase: new URL(BASE_URL),
+  title: {
+    default: defaultTitle,
+    template: `%s | Ringable`, // Template for page titles
+  },
+  description: defaultDescription,
+  // Basic Open Graph and Twitter Card metadata
+  openGraph: {
+    title: defaultTitle,
+    description: defaultDescription,
+    url: BASE_URL,
+    siteName: 'Ringable',
+    // Add a logo URL later if available
+    // images: [
+    //   {
+    //     url: `${BASE_URL}/og-image.png`, // Must be absolute URL
+    //     width: 1200,
+    //     height: 630,
+    //   },
+    // ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: defaultTitle,
+    description: defaultDescription,
+    // images: [`${BASE_URL}/og-image.png`], // Must be absolute URL
+    // Optional: Add Twitter handle
+    // creator: '@yourhandle',
+  },
+  // Icons (favicon, etc.)
+  icons: {
+    icon: '/favicon.ico', // Place favicon in public/
+    // apple: '/apple-touch-icon.png', // Add other icons if needed
+  },
+  // Robots and Sitemap are handled by separate files/routes
 };
 
 // Optional: Client component to handle initialization
