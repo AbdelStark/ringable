@@ -9,7 +9,7 @@ Ringable allows users to create proposals and vote anonymously as part of a pred
 
 Built with a fun, **retro pixel-art aesthetic**, Ringable demonstrates modern cryptography in an engaging, user-friendly way.
 
-**Important Note:** This implementation currently uses **mocked cryptography** functions for UI development and demonstration purposes. The core ring signature logic needs to be integrated by compiling the underlying Rust library ([Nostringer](https://github.com/pen dira/nostringer)) to WebAssembly.
+**Important Note:** This implementation currently uses **mocked cryptography** functions for UI development and demonstration purposes. The core ring signature logic needs to be integrated by compiling the underlying Rust library ([Nostringer](https://github.com/AbdelStark/nostringer)) to WebAssembly.
 
 ## ✨ Key Features
 
@@ -28,7 +28,7 @@ Built with a fun, **retro pixel-art aesthetic**, Ringable demonstrates modern cr
 *   **Styling:** [Tailwind CSS](https://tailwindcss.com/)
 *   **State Management:** [Zustand](https://zustand-demo.pmnd.rs/) (with `persist` middleware for `localStorage`)
 *   **UI Components:** [React](https://reactjs.org/) (within shared `packages/ui`)
-*   **Cryptography:** [Nostringer](https://github.com/pendira/nostringer) (Rust library, intended for WASM compilation - *currently mocked*)
+*   **Cryptography:** [Nostringer](https://github.com/AbdelStark/nostringer) (Rust library, intended for WASM compilation - *currently mocked*)
 *   **Package Manager:** [pnpm](https://pnpm.io/)
 *   **Linting/Formatting:** ESLint, Prettier
 
@@ -89,11 +89,11 @@ This project uses a Turborepo monorepo structure:
 **Next major step:**
 
 1.  **Integrate Real Cryptography:**
-    *   Compile the [Nostringer](https://github.com/pendira/nostringer) Rust library to WebAssembly (`wasm-pack build --target web --features wasm`).
-    *   Place the generated `nostringer.js`, `nostringer_bg.wasm`, and `nostringer.d.ts` files into `apps/web/public/`.
-    *   Copy `nostringer.d.ts` to `packages/crypto/src/types/`.
-    *   Set `MOCK_CRYPTO = false` in `packages/crypto/src/nostringer.ts`.
-    *   Thoroughly test the key generation, signing, verification, and duplicate vote detection logic.
+    -   Compile the [Nostringer](https://github.com/AbdelStark/nostringer) Rust library to WebAssembly (`wasm-pack build --target web --features wasm`).
+    -   Place the generated `nostringer.js`, `nostringer_bg.wasm`, and `nostringer.d.ts` files into `apps/web/public/`.
+    -   Copy `nostringer.d.ts` to `packages/crypto/src/types/`.
+    -   Set `MOCK_CRYPTO = false` in `packages/crypto/src/nostringer.ts`.
+    -   Thoroughly test the key generation, signing, verification, and duplicate vote detection logic.
 
 ## 📄 License
 
