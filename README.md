@@ -1,7 +1,6 @@
 # 💍 Ringable
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-<!-- Add other badges later if desired, e.g., build status -->
 
 **A client-side anonymous voting platform using Nostr-compatible ring signatures.**
 
@@ -13,24 +12,24 @@ Built with a fun, **retro pixel-art aesthetic**, Ringable demonstrates modern cr
 
 ## ✨ Key Features
 
-*   **True Anonymity:** Votes are cryptographically signed by a ring member without revealing *which* member signed.
-*   **Linkability (Duplicate Prevention):** Uses bLSAG signatures, which generate a unique "key image" per voter per proposal, preventing the same person from voting multiple times anonymously.
-*   **Client-Side Only:** No backend server required! All data (keys, rings, proposals, votes) is stored locally in the browser's `localStorage`, managed via Zustand.
-*   **Retro Pixel-Art UI:** A unique, game-inspired interface built with React and Tailwind CSS.
-*   **Nostr Compatible Keys:** Uses secp256k1 keys, compatible with the Nostr ecosystem.
-*   **Monorepo Structure:** Organized using Turborepo for better code sharing and maintainability.
+- **True Anonymity:** Votes are cryptographically signed by a ring member without revealing _which_ member signed.
+- **Linkability (Duplicate Prevention):** Uses bLSAG signatures, which generate a unique "key image" per voter per proposal, preventing the same person from voting multiple times anonymously.
+- **Client-Side Only:** No backend server required! All data (keys, rings, proposals, votes) is stored locally in the browser's `localStorage`, managed via Zustand.
+- **Retro Pixel-Art UI:** A unique, game-inspired interface built with React and Tailwind CSS.
+- **Nostr Compatible Keys:** Uses secp256k1 keys, compatible with the Nostr ecosystem.
+- **Monorepo Structure:** Organized using Turborepo for better code sharing and maintainability.
 
 ## 🛠️ Tech Stack
 
-*   **Monorepo:** [Turborepo](https://turbo.build/repo)
-*   **Framework:** [Next.js 14](https://nextjs.org/) (App Router)
-*   **Language:** [TypeScript](https://www.typescriptlang.org/)
-*   **Styling:** [Tailwind CSS](https://tailwindcss.com/)
-*   **State Management:** [Zustand](https://zustand-demo.pmnd.rs/) (with `persist` middleware for `localStorage`)
-*   **UI Components:** [React](https://reactjs.org/) (within shared `packages/ui`)
-*   **Cryptography:** [Nostringer](https://github.com/AbdelStark/nostringer) (Rust library, intended for WASM compilation - *currently mocked*)
-*   **Package Manager:** [pnpm](https://pnpm.io/)
-*   **Linting/Formatting:** ESLint, Prettier
+- **Monorepo:** [Turborepo](https://turbo.build/repo)
+- **Framework:** [Next.js 14](https://nextjs.org/) (App Router)
+- **Language:** [TypeScript](https://www.typescriptlang.org/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **State Management:** [Zustand](https://zustand-demo.pmnd.rs/) (with `persist` middleware for `localStorage`)
+- **UI Components:** [React](https://reactjs.org/) (within shared `packages/ui`)
+- **Cryptography:** [Nostringer](https://github.com/AbdelStark/nostringer) (Rust library, intended for WASM compilation - _currently mocked_)
+- **Package Manager:** [pnpm](https://pnpm.io/)
+- **Linting/Formatting:** ESLint, Prettier
 
 ## 📂 Project Structure
 
@@ -54,9 +53,9 @@ This project uses a Turborepo monorepo structure:
 
 ### Prerequisites
 
-*   [Node.js](https://nodejs.org/) (Version specified in root `package.json` engines field, e.g., >=18)
-*   [pnpm](https://pnpm.io/) (Version specified in root `package.json` packageManager field, e.g., 8.x)
-*   **(Future Step)** Rust toolchain and `wasm-pack` for compiling the `nostringer` library if replacing mocks.
+- [Node.js](https://nodejs.org/) (Version specified in root `package.json` engines field, e.g., >=18)
+- [pnpm](https://pnpm.io/) (Version specified in root `package.json` packageManager field, e.g., 8.x)
+- **(Future Step)** Rust toolchain and `wasm-pack` for compiling the `nostringer` library if replacing mocks.
 
 ### Installation
 
@@ -80,20 +79,20 @@ This project uses a Turborepo monorepo structure:
 
 ## 🚧 Current Status & Next Steps
 
-*   **Core UI Complete:** Pages for managing keys, rings, creating proposals, listing proposals, voting, and viewing results are implemented.
-*   **Retro Styling:** Basic pixel-art theme applied using Tailwind CSS and a pixel font.
-*   **State Management:** Zustand stores with `localStorage` persistence are functional.
-*   **Deployment Prep:** Basic SEO, sitemap, robots.txt, and Vercel configuration added.
-*   **Cryptography Mocked:** All ring signature operations (`generateKeyPair`, `signBlsag`, `verifyBlsag`, `keyImagesMatch`) are currently using mock functions in `packages/crypto`.
+- **Core UI Complete:** Pages for managing keys, rings, creating proposals, listing proposals, voting, and viewing results are implemented.
+- **Retro Styling:** Basic pixel-art theme applied using Tailwind CSS and a pixel font.
+- **State Management:** Zustand stores with `localStorage` persistence are functional.
+- **Deployment Prep:** Basic SEO, sitemap, robots.txt, and Vercel configuration added.
+- **Cryptography Mocked:** All ring signature operations (`generateKeyPair`, `signBlsag`, `verifyBlsag`, `keyImagesMatch`) are currently using mock functions in `packages/crypto`.
 
 **Next major step:**
 
 1.  **Integrate Real Cryptography:**
-    -   Compile the [Nostringer](https://github.com/AbdelStark/nostringer) Rust library to WebAssembly (`wasm-pack build --target web --features wasm`).
-    -   Place the generated `nostringer.js`, `nostringer_bg.wasm`, and `nostringer.d.ts` files into `apps/web/public/`.
-    -   Copy `nostringer.d.ts` to `packages/crypto/src/types/`.
-    -   Set `MOCK_CRYPTO = false` in `packages/crypto/src/nostringer.ts`.
-    -   Thoroughly test the key generation, signing, verification, and duplicate vote detection logic.
+    - Compile the [Nostringer](https://github.com/AbdelStark/nostringer) Rust library to WebAssembly (`wasm-pack build --target web --features wasm`).
+    - Place the generated `nostringer.js`, `nostringer_bg.wasm`, and `nostringer.d.ts` files into `apps/web/public/`.
+    - Copy `nostringer.d.ts` to `packages/crypto/src/types/`.
+    - Set `MOCK_CRYPTO = false` in `packages/crypto/src/nostringer.ts`.
+    - Thoroughly test the key generation, signing, verification, and duplicate vote detection logic.
 
 ## 📄 License
 
