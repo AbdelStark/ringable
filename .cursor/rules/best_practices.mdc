@@ -1,0 +1,67 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Next.js Best Practices:
+
+Utilize Next.js App Router for improved performance and easier routing
+Implement proper error boundaries to handle and display errors gracefully
+Use server components for better performance and reduced client-side JavaScript
+Leverage Next.js built-in image optimization for faster image loading
+Implement proper data fetching patterns using getServerSideProps or getStaticProps
+Use Next.js built-in internationalization features for multi-language support
+
+React Best Practices:
+
+Use functional components and hooks instead of class components for better code organization
+Implement proper React.memo and useMemo for performance optimization
+Follow the React hooks rules strictly to avoid common pitfalls
+Use context API or state management libraries for global state management
+Implement proper prop type validation using PropTypes or TypeScript
+Utilize React.lazy and Suspense for code-splitting and lazy loading components
+
+TypeScript Best Practices:
+
+Use TypeScript strict mode for better type safety and catching potential errors
+Follow proper type definitions and use interfaces or types consistently
+Implement comprehensive error handling using try-catch blocks and proper error types
+Utilize type inference where possible to reduce unnecessary type annotations
+Use utility types like Partial, Readonly, and Pick to create more flexible types
+Implement proper null and undefined checks to avoid runtime errors
+
+React Query Best Practices:
+
+Use React Query for efficient data fetching and caching
+Implement proper query keys to ensure correct cache invalidation
+Utilize query options like staleTime and cacheTime for optimal performance
+Implement proper error handling and loading states for a better user experience
+Use mutations for handling side effects and optimistic updates
+Leverage the useQueryClient hook for advanced cache management
+
+React Hook Form Best Practices:
+
+Use React Hook Form for efficient form handling and validation
+Implement proper form validation using the built-in validation methods
+Utilize the watch function for real-time form value monitoring
+Implement custom validation rules using the validate option
+Use the reset function to properly reset form state
+Leverage the useFormContext hook for nested form components
+
+Zod Best Practices:
+
+Use Zod for runtime type checking and validation
+Implement proper schema definitions for data validation
+Utilize Zod's built-in validation methods for common data types
+Implement custom validation rules using Zod's refine method
+Use Zod's infer utility to generate TypeScript types from schemas
+Leverage Zod's integration with React Hook Form for seamless form validation
+
+Tailwind CSS Best Practices:
+
+Use Tailwind CSS for efficient and consistent styling
+Implement proper responsive design using Tailwind's responsive utilities
+Utilize Tailwind's custom theme configuration for consistent branding
+Implement proper accessibility practices using Tailwind's accessibility utilities
+Use Tailwind's @apply directive for component-level styling
+Leverage Tailwind's JIT mode for faster build times and smaller CSS output
