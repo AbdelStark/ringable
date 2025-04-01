@@ -3,6 +3,7 @@ import "@repo/ui/styles.css";
 import type { Metadata } from "next";
 // import { Inter } from "next/font/google"; // Remove default font
 import { Press_Start_2P } from "next/font/google"; // Import pixel font
+import Link from "next/link"; // Import Link
 
 // const inter = Inter({ subsets: ["latin"] });
 const pressStart2P = Press_Start_2P({
@@ -27,13 +28,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       {/* <ClientInitializer /> Uncomment if using initializer component */}
-      <body className={`${pressStart2P.className} bg-blue-100 text-gray-900`}> {/* Apply pixel font, change background */}
-        <div className="container mx-auto p-4 border-4 border-black bg-blue-50 shadow-lg pixel-shadow"> {/* Retro container */}
-          <header className="mb-8 pb-4 border-b-4 border-black">
-            <h1 className="text-3xl text-center font-bold">RINGABLE</h1>
+      <body className={`${pressStart2P.className} bg-pixel-bg text-pixel-text`}> {/* Use themed colors */}
+        <div className="container mx-auto p-4 border-3 border-pixel-border bg-pixel-container-bg shadow-pixel max-w-3xl mt-4 mb-4"> {/* Adjusted container */}
+          <header className="mb-6 pb-3 border-b-3 border-pixel-border flex justify-between items-center">
+            <Link href="/" className="text-2xl font-normal hover:text-pixel-accent transition-colors">RINGABLE</Link>
+            <nav>
+              <Link href="/settings" className="text-sm hover:text-pixel-accent hover:underline">Settings</Link>
+              {/* Add other links here later (e.g., Rings, New Proposal) */} 
+            </nav>
           </header>
-          <main>{children}</main>
-          <footer className="mt-8 pt-4 border-t-4 border-black text-center text-xs">
+          <main className="min-h-[60vh]">{children}</main> {/* Added min-height */}
+          <footer className="mt-6 pt-3 border-t-3 border-pixel-border text-center text-xs">
             <p>&copy; {new Date().getFullYear()} Ringable. Anonymous votes FTW!</p>
           </footer>
         </div>
