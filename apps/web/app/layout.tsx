@@ -32,9 +32,10 @@ export default function RootLayout({
         <div className="container mx-auto p-4 border-3 border-pixel-border bg-pixel-container-bg shadow-pixel max-w-3xl mt-4 mb-4"> {/* Adjusted container */}
           <header className="mb-6 pb-3 border-b-3 border-pixel-border flex justify-between items-center">
             <Link href="/" className="text-2xl font-normal hover:text-pixel-accent transition-colors">RINGABLE</Link>
-            <nav>
+            <nav className="flex gap-4 items-center"> {/* Use flex gap */}
+              <Link href="/rings" className="text-sm hover:text-pixel-accent hover:underline">Rings</Link>
+              {/* Add New Proposal link later */} 
               <Link href="/settings" className="text-sm hover:text-pixel-accent hover:underline">Settings</Link>
-              {/* Add other links here later (e.g., Rings, New Proposal) */} 
             </nav>
           </header>
           <main className="min-h-[60vh]">{children}</main> {/* Added min-height */}
