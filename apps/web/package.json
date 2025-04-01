@@ -11,10 +11,13 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@repo/crypto": "workspace:*",
     "@repo/ui": "workspace:*",
     "next": "^15.2.1",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "zustand": "^4.5.2",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^15.2.2",
@@ -24,6 +27,7 @@
     "@types/node": "^22.13.9",
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
+    "@types/uuid": "^9.0.8",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.23.0",
     "postcss": "^8.5.3",

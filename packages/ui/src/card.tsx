@@ -1,30 +1,24 @@
-import { type ReactNode } from "react";
+import * as React from "react";
 
-export function Card({
-  title,
-  children,
-  href,
-}: {
-  title: string;
-  children: ReactNode;
-  href: string;
-}) {
+export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  title?: string;
+  children: React.ReactNode;
+}
+
+export function Card({ title, children, className, ...props }: CardProps): JSX.Element {
   return (
-    <a
-      className="ui-group ui-rounded-lg ui-border ui-border-transparent ui-px-5 ui-py-4 ui-transition-colors hover:ui-border-neutral-700 hover:ui-bg-neutral-800/30"
-      href={`${href}?utm_source=create-turbo&utm_medium=with-tailwind&utm_campaign=create-turbo"`}
-      rel="noopener noreferrer"
-      target="_blank"
+    <div
+      className={`border-3 border-pixel-border bg-pixel-container-bg shadow-pixel p-4 ${className ?? ""}`}
+      {...props}
     >
-      <h2 className="ui-mb-3 ui-text-2xl ui-font-semibold">
-        {title}{" "}
-        <span className="ui-inline-block ui-transition-transform group-hover:ui-translate-x-1 motion-reduce:ui-transform-none">
-          -&gt;
-        </span>
-      </h2>
-      <p className="ui-m-0 ui-max-w-[30ch] ui-text-sm ui-opacity-50">
+      {title && (
+        <h2 className="text-base font-normal border-b-3 border-pixel-border mb-3 pb-2 uppercase tracking-wider">
+          {title}
+        </h2>
+      )}
+      <div className="text-sm">
         {children}
-      </p>
-    </a>
+      </div>
+    </div>
   );
 }

@@ -5,9 +5,11 @@
     "**/*.css"
   ],
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "exports": {
+    ".": "./src/index.tsx",
     "./styles.css": "./dist/index.css",
     "./*": "./src/*.tsx"
   },
@@ -19,7 +21,7 @@
     "lint": "eslint src --max-warnings 0"
   },
   "peerDependencies": {
-    "react": "^19"
+    "react": "^18 || ^19"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
