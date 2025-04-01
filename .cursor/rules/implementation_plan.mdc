@@ -10,16 +10,11 @@ alwaysApply: true
 
 In addition to strong privacy, Ringable features a distinctive **retro game-inspired pixel-art design**. The UI adopts a nostalgic 8-bit aesthetic (e.g. pixelated icons, blocky fonts, limited color palette) while maintaining modern usability. The combination of cutting-edge cryptography (ring signatures) with a playful vintage interface makes Ringable both secure and engaging. 
 
-**Tech Stack Overview:** We use a **Turborepo monorepo** (initialized with `pnpm` and the Tailwind CSS example) to structure the project. This provides a Next.js frontend app and shared packages for UI components and utilities ([turborepo/examples/with-tailwind/README.md at main · vercel/turborepo · GitHub](https://github.com/vercel/turbo/blob/main/examples/with-tailwind/README.md#:~:text=,s%20used%20throughout%20the%20monorepo)). All code is written in TypeScript. **Zustand** manages application state (with persistence to localStorage for offline use), and the **Nostringer** Rust library (via WebAssembly) provides cryptographic functions for ring signatures. The focus is on the **bLSAG** variant of ring signatures (Back’s Linkable Spontaneous Anonymous Group) which produces a linkable *key image* per private key to detect duplicate votes ([Nostringer — Rust auth library // Lib.rs](https://lib.rs/crates/nostringer#:~:text=A%20linkable%20variant%20that%3A)). In other words, while all votes remain anonymous, the system can tell if the *same* person voted more than once, preventing double-voting. 
+**Tech Stack Overview:** We use a **Turborepo monorepo** to structure the project. This provides a Next.js frontend app and shared packages for UI components and utilities ([turborepo/examples/with-tailwind/README.md at main · vercel/turborepo · GitHub](https://github.com/vercel/turbo/blob/main/examples/with-tailwind/README.md#:~:text=,s%20used%20throughout%20the%20monorepo)). All code is written in TypeScript. **Zustand** manages application state (with persistence to localStorage for offline use), and the **Nostringer** Rust library (via WebAssembly) provides cryptographic functions for ring signatures. The focus is on the **bLSAG** variant of ring signatures (Back’s Linkable Spontaneous Anonymous Group) which produces a linkable *key image* per private key to detect duplicate votes ([Nostringer — Rust auth library // Lib.rs](https://lib.rs/crates/nostringer#:~:text=A%20linkable%20variant%20that%3A)). In other words, while all votes remain anonymous, the system can tell if the *same* person voted more than once, preventing double-voting. 
 
 This guide will detail the project structure, module implementation, integration of the Nostringer WASM, and the design system for the retro UI. By the end, you should have a clear blueprint for building **Ringable**: from generating voter keys and rings, to signing and verifying anonymous votes, all wrapped in a polished pixel-art interface.
 
 ## Project Setup and Structure  
-We start by scaffolding a Turborepo monorepo with the Tailwind template. Run: 
-
-```bash
-npx create-turbo@latest ringable -m pnpm -e with-tailwind
-``` 
 
 This yields a repository with multiple apps and packages ([turborepo/examples/with-tailwind/README.md at main · vercel/turborepo · GitHub](https://github.com/vercel/turbo/blob/main/examples/with-tailwind/README.md#:~:text=,s%20used%20throughout%20the%20monorepo)): 
 
