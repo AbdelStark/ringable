@@ -1,58 +1,100 @@
-# Turborepo Tailwind CSS starter
+# 💍 Ringable
 
-This Turborepo starter is maintained by the Turborepo core team.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<!-- Add other badges later if desired, e.g., build status -->
 
-## Using this example
+**A client-side anonymous voting platform using Nostr-compatible ring signatures.**
 
-Run the following command:
+Ringable allows users to create proposals and vote anonymously as part of a predefined group (a "ring" of public keys). It leverages the cryptographic power of **bLSAG ring signatures** to ensure that while votes are verified as coming from a valid member of the ring, the specific voter's identity remains hidden.
 
-```sh
-npx create-turbo@latest -e with-tailwind
+Built with a fun, **retro pixel-art aesthetic**, Ringable demonstrates modern cryptography in an engaging, user-friendly way.
+
+**Important Note:** This implementation currently uses **mocked cryptography** functions for UI development and demonstration purposes. The core ring signature logic needs to be integrated by compiling the underlying Rust library ([Nostringer](https://github.com/pen dira/nostringer)) to WebAssembly.
+
+## ✨ Key Features
+
+*   **True Anonymity:** Votes are cryptographically signed by a ring member without revealing *which* member signed.
+*   **Linkability (Duplicate Prevention):** Uses bLSAG signatures, which generate a unique "key image" per voter per proposal, preventing the same person from voting multiple times anonymously.
+*   **Client-Side Only:** No backend server required! All data (keys, rings, proposals, votes) is stored locally in the browser's `localStorage`, managed via Zustand.
+*   **Retro Pixel-Art UI:** A unique, game-inspired interface built with React and Tailwind CSS.
+*   **Nostr Compatible Keys:** Uses secp256k1 keys, compatible with the Nostr ecosystem.
+*   **Monorepo Structure:** Organized using Turborepo for better code sharing and maintainability.
+
+## 🛠️ Tech Stack
+
+*   **Monorepo:** [Turborepo](https://turbo.build/repo)
+*   **Framework:** [Next.js 14](https://nextjs.org/) (App Router)
+*   **Language:** [TypeScript](https://www.typescriptlang.org/)
+*   **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+*   **State Management:** [Zustand](https://zustand-demo.pmnd.rs/) (with `persist` middleware for `localStorage`)
+*   **UI Components:** [React](https://reactjs.org/) (within shared `packages/ui`)
+*   **Cryptography:** [Nostringer](https://github.com/pendira/nostringer) (Rust library, intended for WASM compilation - *currently mocked*)
+*   **Package Manager:** [pnpm](https://pnpm.io/)
+*   **Linting/Formatting:** ESLint, Prettier
+
+## 📂 Project Structure
+
+This project uses a Turborepo monorepo structure:
+
+```plaintext
+.
+├── apps
+│   ├── web/        # Main Next.js web application (Ringable UI)
+│   └── docs/       # (Optional) Placeholder for documentation site
+├── packages
+│   ├── crypto/     # Wrapper for cryptography functions (Nostringer WASM - currently mocked)
+│   ├── eslint-config/ # Shared ESLint configuration
+│   ├── tailwind-config/ # Shared Tailwind CSS configuration
+│   ├── tsconfig/   # Shared TypeScript configuration
+│   └── ui/         # Shared React UI components (Button, Card, Input, etc.)
+└── package.json    # Root configuration
 ```
 
-## What's inside?
+## 🚀 Getting Started
 
-This Turborepo includes the following packages/apps:
+### Prerequisites
 
-### Apps and Packages
+*   [Node.js](https://nodejs.org/) (Version specified in root `package.json` engines field, e.g., >=18)
+*   [pnpm](https://pnpm.io/) (Version specified in root `package.json` packageManager field, e.g., 8.x)
+*   **(Future Step)** Rust toolchain and `wasm-pack` for compiling the `nostringer` library if replacing mocks.
 
-- `docs`: a [Next.js](https://nextjs.org/) app with [Tailwind CSS](https://tailwindcss.com/)
-- `web`: another [Next.js](https://nextjs.org/) app with [Tailwind CSS](https://tailwindcss.com/)
-- `ui`: a stub React component library with [Tailwind CSS](https://tailwindcss.com/) shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+### Installation
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/AbdelStark/ringable.git
+    cd ringable
+    ```
+2.  Install dependencies from the root directory:
+    ```bash
+    pnpm install
+    ```
 
-### Building packages/ui
+### Running the Development Server
 
-This example is set up to produce compiled styles for `ui` components into the `dist` directory. The component `.tsx` files are consumed by the Next.js apps directly using `transpilePackages` in `next.config.ts`. This was chosen for several reasons:
+1.  Start the development server (this will run the Next.js app and watch for changes in shared packages):
+    ```bash
+    pnpm run dev
+    ```
+2.  Open your browser to [`http://localhost:3000`](http://localhost:3000) to see the Ringable web application.
 
-- Make sharing one `tailwind.config.ts` to apps and packages as easy as possible.
-- Make package compilation simple by only depending on the Next.js Compiler and `tailwindcss`.
-- Ensure Tailwind classes do not overwrite each other. The `ui` package uses a `ui-` prefix for it's classes.
-- Maintain clear package export boundaries.
+## 🚧 Current Status & Next Steps
 
-Another option is to consume `packages/ui` directly from source without building. If using this option, you will need to update the `tailwind.config.ts` in your apps to be aware of your package locations, so it can find all usages of the `tailwindcss` class names for CSS compilation.
+*   **Core UI Complete:** Pages for managing keys, rings, creating proposals, listing proposals, voting, and viewing results are implemented.
+*   **Retro Styling:** Basic pixel-art theme applied using Tailwind CSS and a pixel font.
+*   **State Management:** Zustand stores with `localStorage` persistence are functional.
+*   **Deployment Prep:** Basic SEO, sitemap, robots.txt, and Vercel configuration added.
+*   **Cryptography Mocked:** All ring signature operations (`generateKeyPair`, `signBlsag`, `verifyBlsag`, `keyImagesMatch`) are currently using mock functions in `packages/crypto`.
 
-For example, in [tailwind.config.ts](packages/tailwind-config/tailwind.config.ts):
+**Next major step:**
 
-```js
-  content: [
-    // app content
-    `src/**/*.{js,ts,jsx,tsx}`,
-    // include packages if not transpiling
-    "../../packages/ui/*.{js,ts,jsx,tsx}",
-  ],
-```
+1.  **Integrate Real Cryptography:**
+    *   Compile the [Nostringer](https://github.com/pendira/nostringer) Rust library to WebAssembly (`wasm-pack build --target web --features wasm`).
+    *   Place the generated `nostringer.js`, `nostringer_bg.wasm`, and `nostringer.d.ts` files into `apps/web/public/`.
+    *   Copy `nostringer.d.ts` to `packages/crypto/src/types/`.
+    *   Set `MOCK_CRYPTO = false` in `packages/crypto/src/nostringer.ts`.
+    *   Thoroughly test the key generation, signing, verification, and duplicate vote detection logic.
 
-If you choose this strategy, you can remove the `tailwindcss` and `autoprefixer` dependencies from the `ui` package.
+## 📄 License
 
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [Tailwind CSS](https://tailwindcss.com/) for styles
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
