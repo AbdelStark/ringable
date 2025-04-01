@@ -161,7 +161,7 @@ export default function ProposalDetailsPage(): JSX.Element {
         ) : totalVotes === 0 ? (
           <p className="text-sm text-gray-500 italic">No votes cast yet.</p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {proposal.options.map((option) => {
               const count = voteCounts[option.id] ?? 0;
               const percentage = totalVotes === 0 ? 0 : (count / totalVotes) * 100;
@@ -169,19 +169,20 @@ export default function ProposalDetailsPage(): JSX.Element {
                 <div key={option.id} className="text-sm">
                   <div className="flex justify-between items-center mb-1">
                     <span className="break-all mr-2">{option.text}</span>
-                    <span className="font-bold shrink-0">{count} vote{count !== 1 ? 's' : ''} ({percentage.toFixed(1)}%)</span>
+                    <span className="font-bold shrink-0">{count} vote{count !== 1 ? 's' : ''} ({percentage.toFixed(0)}%)</span>
                   </div>
-                  {/* Basic Progress Bar */}
-                  <div className="w-full bg-gray-200 border-2 border-pixel-border h-4">
+                  {/* Pixel-style Progress Bar */}
+                  <div className="w-full bg-white border-4 border-pixel-border h-5 p-0.5">
                     <div
-                      className="bg-pixel-accent h-full"
+                      className="bg-pixel-accent h-full transition-width duration-300 ease-in-out"
                       style={{ width: `${percentage}%` }}
+                      title={`${percentage.toFixed(1)}%`}
                     />
                   </div>
                 </div>
               );
             })}
-            <p className="text-xs pt-2 border-t-3 border-pixel-border">Total Votes: {totalVotes}</p>
+            <p className="text-xs pt-3 border-t-4 border-pixel-border mt-3">Total Votes: {totalVotes}</p>
           </div>
         )}
       </Card>

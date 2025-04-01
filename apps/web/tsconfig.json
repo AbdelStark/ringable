@@ -1,6 +1,7 @@
 {
   "extends": "@repo/typescript-config/nextjs.json",
   "compilerOptions": {
+    "jsx": "preserve",
     "plugins": [
       {
         "name": "next"
@@ -11,7 +12,7 @@
     "**/*.ts",
     "**/*.tsx",
     "next-env.d.ts",
-    "next.config.ts",
+    "next.config.mjs",
     ".next/types/**/*.ts"
   ],
   "exclude": ["node_modules"]
