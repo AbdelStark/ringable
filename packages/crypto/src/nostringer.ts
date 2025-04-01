@@ -5,6 +5,9 @@
 const MOCK_CRYPTO = true; // Set to false when WASM is available
 // --- END MOCK IMPLEMENTATION --- //
 
+// Import types locally now
+import type * as NostringerTypes from "./types/nostringer";
+
 // Removed type import - rely on any for now until nostringer.d.ts is available
 // import type { KeyPair as NostringerKeyPair } from "../wasm/nostringer";
 
@@ -14,41 +17,64 @@ export interface KeyPair {
   privateKeyHex: string;
 }
 
+// Define an interface for the expected module structure based on nostringer.d.ts
+interface NostringerModule {
+  default: () => Promise<void>;
+  wasm_generate_keypair: (type: string) => NostringerTypes.KeyPair; // Use imported type
+  wasm_sign_blsag: (
+    message: Uint8Array,
+    privateKeyHex: string,
+    ringPublicKeysHex: string[]
+  ) => string;
+  wasm_verify_blsag: (
+    signatureHex: string,
+    message: Uint8Array,
+    ringPublicKeysHex: string[]
+  ) => boolean;
+  wasm_key_images_match: (
+    signature1Hex: string,
+    signature2Hex: string
+  ) => boolean;
+  // Add other exported functions if needed
+}
+
 // Dynamically import the WASM module from the public root
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Using any for WASM module flexibility
-async function loadWasmModule(): Promise<any> {
+async function loadWasmModule(): Promise<NostringerModule> {
   // --- MOCK IMPLEMENTATION --- //
   if (MOCK_CRYPTO) {
     console.warn("CRYPTO MOCK: Skipping WASM load.");
-    // Return a mock object simulating the WASM module structure if needed by ensureInitialized
+    // Return mock satisfying the interface
     return {
       default: async () => {
         console.warn("CRYPTO MOCK: Skipping WASM init.");
       },
+      // Provide mock implementations that match the expected signature (even if they error)
       wasm_generate_keypair: () => {
-        throw new Error("WASM not loaded");
+        throw new Error("CRYPTO MOCK: Not implemented");
       },
       wasm_sign_blsag: () => {
-        throw new Error("WASM not loaded");
+        throw new Error("CRYPTO MOCK: Not implemented");
       },
       wasm_verify_blsag: () => {
-        throw new Error("WASM not loaded");
+        throw new Error("CRYPTO MOCK: Not implemented");
       },
       wasm_key_images_match: () => {
-        throw new Error("WASM not loaded");
+        throw new Error("CRYPTO MOCK: Not implemented");
       },
     };
   }
   // --- END MOCK IMPLEMENTATION --- //
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- dynamic import
+    // Dynamic import still targets runtime path
     const nostringerModule = await import(
       /* webpackIgnore: true */ "/nostringer.js"
-    ); // Path relative to public root
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- dynamic import
-    await nostringerModule.default(); // Initialize the WASM module
-    return nostringerModule;
+    );
+    // Initialize
+    await nostringerModule.default();
+    // Assert the type for build-time checking
+    return nostringerModule as NostringerModule;
   } catch (error) {
     console.error(
       "Failed to load Nostringer WASM module from /nostringer.js:",
@@ -59,47 +85,50 @@ async function loadWasmModule(): Promise<any> {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Using any for WASM module flexibility
-let nostringerApi: any | null = null;
+let nostringerApi: NostringerModule | null = null;
 let isInitializing = false;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Using any for WASM module flexibility
-let initializationPromise: Promise<any> | null = null;
+// Adjust promise type to potentially include null on failure
+let initializationPromise: Promise<NostringerModule | null | void> | null =
+  null;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Using any for WASM module flexibility
-async function ensureInitialized(): Promise<any> {
-  // --- MOCK IMPLEMENTATION --- //
+async function ensureInitialized(): Promise<NostringerModule | void> {
   if (MOCK_CRYPTO) {
-    return; // In mock mode, functions will provide their own mocks
+    return;
   }
-  // --- END MOCK IMPLEMENTATION --- //
 
-  // (Original initialization logic remains for when MOCK_CRYPTO is false)
   if (nostringerApi) {
     return nostringerApi;
   }
   if (!initializationPromise) {
-    initializationPromise = (async () => {
+    initializationPromise = (async (): Promise<NostringerModule | null> => {
+      // Ensure inner promise matches potential null
       if (isInitializing || nostringerApi) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- dynamic import
         return nostringerApi;
       }
       isInitializing = true;
       try {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- dynamic import
         nostringerApi = await loadWasmModule();
         console.log("Nostringer WASM module initialized successfully.");
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- dynamic import
         return nostringerApi;
       } catch (error) {
         console.error("Error during Nostringer initialization:", error);
-        initializationPromise = null; // Reset promise on failure
-        throw error;
+        initializationPromise = null;
+        // Return null on failure to match the Promise type
+        return null;
       } finally {
         isInitializing = false;
       }
     })();
   }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- dynamic import
-  return await initializationPromise;
+  // Await the promise and handle potential null before returning
+  const result = await initializationPromise;
+  if (!result) {
+    // Handle initialization failure case - maybe throw an error or return void
+    // Depending on how consuming functions expect to handle it.
+    // Throwing might be safer if initialization is critical.
+    throw new Error("Crypto module failed to initialize.");
+  }
+  return result;
 }
 
 function generateMockHex(length: number): string {
@@ -124,12 +153,10 @@ export async function generateKeyPair(): Promise<KeyPair> {
   // --- END MOCK IMPLEMENTATION --- //
 
   const api = await ensureInitialized();
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment -- WASM call
+  if (!api) throw new Error("Crypto module not initialized");
   const kp = api.wasm_generate_keypair("xonly");
   return {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access -- WASM call
     publicKeyHex: kp.public_key_hex(),
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access -- WASM call
     privateKeyHex: kp.private_key_hex(),
   };
 }
@@ -151,7 +178,7 @@ export async function signBlsag(
   // --- END MOCK IMPLEMENTATION --- //
 
   const api = await ensureInitialized();
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return -- WASM call
+  if (!api) throw new Error("Crypto module not initialized");
   return api.wasm_sign_blsag(message, privateKeyHex, ringPublicKeysHex);
 }
 
@@ -170,7 +197,7 @@ export async function verifyBlsag(
   // --- END MOCK IMPLEMENTATION --- //
 
   const api = await ensureInitialized();
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return -- WASM call
+  if (!api) throw new Error("Crypto module not initialized");
   return api.wasm_verify_blsag(signatureHex, message, ringPublicKeysHex);
 }
 
@@ -191,6 +218,6 @@ export async function keyImagesMatch(
   // --- END MOCK IMPLEMENTATION --- //
 
   const api = await ensureInitialized();
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return -- WASM call
+  if (!api) throw new Error("Crypto module not initialized");
   return api.wasm_key_images_match(signature1Hex, signature2Hex);
 }

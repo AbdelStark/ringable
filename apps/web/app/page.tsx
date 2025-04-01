@@ -1,10 +1,11 @@
 "use client"; // Required for using hooks like useState or zustand stores
 
+import * as React from "react"; // Ensure React is imported
 import { Button, Card } from "@repo/ui"; // Import our UI components
 import { useProposalsStore } from "../stores/useProposalsStore"; // Import proposal store
 import Link from "next/link"; // Import Link
 
-export default function HomePage() {
+export default function HomePage(): React.ReactNode {
   const { proposals } = useProposalsStore();
 
   return (

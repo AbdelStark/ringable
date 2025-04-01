@@ -1,10 +1,11 @@
-import * as React from "react"; // Explicitly import React
+import * as React from "react";
 import "./globals.css";
 import "@repo/ui/styles.css";
 import type { Metadata } from "next";
 // import { Inter } from "next/font/google"; // Remove default font
 import { Press_Start_2P } from "next/font/google"; // Import pixel font
-import Link from "next/link"; // Import Link
+import NextLink from "next/link"; // Import with different name
+import type { LinkProps } from "next/link"; // Import props type
 
 // const inter = Inter({ subsets: ["latin"] });
 const pressStart2P = Press_Start_2P({
@@ -61,11 +62,14 @@ export const metadata: Metadata = {
 // Optional: Client component to handle initialization
 // import { ClientInitializer } from "./client-initializer";
 
+// Cast Link to a basic functional component type as a workaround
+const Link: React.FC<LinkProps & React.AnchorHTMLAttributes<HTMLAnchorElement>> = NextLink as any;
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
-}) {
+}): JSX.Element {
   return (
     <html lang="en">
       {/* <ClientInitializer /> Uncomment if using initializer component */}

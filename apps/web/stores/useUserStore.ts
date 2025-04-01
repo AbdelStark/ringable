@@ -1,5 +1,10 @@
 import { create, StateCreator } from "zustand";
-import { persist, createJSONStorage, PersistOptions } from "zustand/middleware";
+import {
+  persist,
+  createJSONStorage,
+  PersistOptions,
+  PersistStorage,
+} from "zustand/middleware";
 import { generateKeyPair } from "@repo/crypto";
 import { type KeyPair } from "./types";
 
@@ -10,10 +15,16 @@ interface UserState {
   setKeyPair: (keyPair: KeyPair | null) => void;
 }
 
+// Define the type for the persisted part of the state
+type PersistedUserState = Pick<UserState, "keyPair">;
+
 // Explicitly type the state creator and persist options
+// Note: The type arguments for PersistOptions need the base state and the persisted state
 type UserPersist = (
   config: StateCreator<UserState>,
-  options: PersistOptions<UserState>
+  options: Omit<PersistOptions<UserState, PersistedUserState>, "storage"> & {
+    storage: PersistStorage<PersistedUserState> | undefined;
+  }
 ) => StateCreator<UserState>;
 
 export const useUserStore = create<UserState>(
@@ -31,7 +42,6 @@ export const useUserStore = create<UserState>(
         } catch (error) {
           console.error("Failed to generate key pair:", error);
           set({ isLoadingKeyPair: false });
-          // Optionally: propagate error to UI
         }
       },
 
@@ -40,10 +50,10 @@ export const useUserStore = create<UserState>(
       },
     }),
     {
-      name: "ringable-user-storage", // Name for localStorage key
-      storage: createJSONStorage(() => localStorage), // Use localStorage
-      // Only persist the keyPair
-      partialize: (state) => ({ keyPair: state.keyPair }),
+      name: "ringable-user-storage",
+      storage: createJSONStorage(() => localStorage),
+      // Use Pick to correctly type the partialized state
+      partialize: (state): PersistedUserState => ({ keyPair: state.keyPair }),
     }
   )
 );
