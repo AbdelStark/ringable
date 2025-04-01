@@ -1,3 +1,4 @@
+import * as React from "react"; // Explicitly import React
 import "./globals.css";
 import "@repo/ui/styles.css";
 import type { Metadata } from "next";
@@ -64,7 +65,7 @@ export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
-}): JSX.Element {
+}) {
   return (
     <html lang="en">
       {/* <ClientInitializer /> Uncomment if using initializer component */}
