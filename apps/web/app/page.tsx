@@ -2,47 +2,32 @@
 
 import { Button, Card } from "@repo/ui"; // Import our UI components
 import { useUserStore } from "../stores/useUserStore"; // Import user store
+import Link from "next/link"; // Import Link
 
 export default function HomePage(): JSX.Element {
   const { keyPair, generateAndSetKeyPair, isLoadingKeyPair } = useUserStore();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2">
-      <h1 className="text-4xl font-bold mb-6">Welcome to Ringable!</h1>
+    <div className="space-y-6"> {/* Add spacing */}
+      <div className="flex justify-between items-start"> {/* Align items */} 
+        <h1 className="text-2xl font-bold uppercase tracking-wider">Proposals</h1>
+        <Link href="/proposals/new">
+          <Button>+ New Proposal</Button>
+        </Link>
+      </div>
 
-      <Card title="Your Identity" className="mb-4 w-full max-w-md">
-        {keyPair ? (
-          <div>
-            <p className="text-sm break-all">
-              <strong>Public Key:</strong> {keyPair.publicKeyHex}
-            </p>
-            {/* In a real app, NEVER display the private key */}
-            {/* <p className="text-sm break-all"><strong>Private Key:</strong> {keyPair.privateKeyHex}</p> */}
-          </div>
-        ) : (
-          <p>No keypair generated yet.</p>
-        )}
-        <Button
-          onClick={generateAndSetKeyPair}
-          disabled={isLoadingKeyPair || !!keyPair}
-          className="mt-4"
-        >
-          {isLoadingKeyPair
-            ? "Generating..."
-            : keyPair
-              ? "Keypair Generated"
-              : "Generate Keypair"}
-        </Button>
+      {/* Placeholder for proposal list */}
+      <Card className="min-h-[200px]">
+        <p className="text-sm text-gray-500 italic text-center pt-8">
+          Proposals will be listed here...
+        </p>
       </Card>
 
-      <p className="text-gray-600">
-        This is the main page. We will list proposals here later.
-      </p>
+      {/* Moved keypair info to settings, can remove or keep for debug */}
+      {/* <Card title="Your Identity (Debug)" className="mb-4 w-full max-w-md">
+        ...
+      </Card> */}
 
-      {/* Example Button Usage */}
-      <Button className="mt-8" onClick={() => { alert("Button clicked!"); }}>
-        Test Button
-      </Button>
     </div>
   );
 }
