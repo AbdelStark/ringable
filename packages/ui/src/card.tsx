@@ -5,10 +5,17 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
 }
 
-export function Card({ title, children, className, ...props }: CardProps): JSX.Element {
+export function Card({
+  title,
+  children,
+  className,
+  ...props
+}: CardProps): JSX.Element {
   return (
     <div
-      className={`border-4 border-pixel-border bg-pixel-container-bg shadow-pixel p-3 ${className ?? ""}`}
+      className={`border-4 border-pixel-border bg-pixel-container-bg shadow-pixel p-3 ${
+        className ?? ""
+      }`}
       {...props}
     >
       {title && (
@@ -18,9 +25,7 @@ export function Card({ title, children, className, ...props }: CardProps): JSX.E
           </h2>
         </div>
       )}
-      <div className="text-sm">
-        {children}
-      </div>
+      <div className="text-sm">{children}</div>
     </div>
   );
 }

@@ -9,6 +9,8 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
+    "@repo/crypto": "link:packages/crypto",
+    "@types/node": "^22.13.17",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "prettier": "^3.5.3",

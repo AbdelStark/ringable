@@ -13,7 +13,7 @@ interface RingState {
 
 type RingPersist = (
   config: StateCreator<RingState>,
-  options: PersistOptions<RingState>
+  options: PersistOptions<RingState>,
 ) => StateCreator<RingState>;
 
 export const useRingStore = create<RingState>(
@@ -34,7 +34,7 @@ export const useRingStore = create<RingState>(
       updateRing: (id: string, updates: Partial<Omit<Ring, "id">>) => {
         set((state: RingState) => ({
           rings: state.rings.map((ring) =>
-            ring.id === id ? { ...ring, ...updates } : ring
+            ring.id === id ? { ...ring, ...updates } : ring,
           ),
         }));
       },
@@ -52,6 +52,6 @@ export const useRingStore = create<RingState>(
     {
       name: "ringable-rings-storage",
       storage: createJSONStorage(() => localStorage),
-    }
-  )
+    },
+  ),
 );

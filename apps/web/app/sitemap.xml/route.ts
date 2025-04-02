@@ -21,8 +21,10 @@ export async function GET() {
       (route) => `
     <url>
       <loc>${`${BASE_URL}${route}`}</loc>
-      <lastmod>${new Date().toISOString().split("T")[0]}</lastmod> {/* Use current date as placeholder */}
-    </url>`
+      <lastmod>${
+        new Date().toISOString().split("T")[0]
+      }</lastmod> {/* Use current date as placeholder */}
+    </url>`,
     )
     .join("")}
 </urlset>`;

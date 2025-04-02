@@ -1,7 +1,8 @@
-import { type KeyPair as CryptoKeyPair } from "@repo/crypto";
-
-// Re-exporting KeyPair from crypto if needed, or defining a specific UI/Store version
-export type KeyPair = CryptoKeyPair;
+// Define a serializable version of KeyPair
+export interface KeyPair {
+  privateKeyHex: string;
+  publicKeyHex: string;
+}
 
 export interface Ring {
   id: string; // Unique ID for the ring (e.g., UUID)

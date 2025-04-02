@@ -3,4 +3,4 @@ const config = {
   transpilePackages: ["@repo/ui", "@repo/crypto"],
 };
 
-export default config; 
+export default config;

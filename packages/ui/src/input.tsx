@@ -1,10 +1,16 @@
 import * as React from "react";
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
 }
 
-export function Input({ label, id, className, ...props }: InputProps): JSX.Element {
+export function Input({
+  label,
+  id,
+  className,
+  ...props
+}: InputProps): JSX.Element {
   const inputId = id ?? React.useId();
 
   // Basic styles for input, focusing on border and removing default browser styles
@@ -14,7 +20,7 @@ export function Input({ label, id, className, ...props }: InputProps): JSX.Eleme
     appearance-none`; // Remove default appearance
 
   return (
-    <div className={`w-full ${props.type === 'hidden' ? 'hidden' : ''}`}>
+    <div className={`w-full ${props.type === "hidden" ? "hidden" : ""}`}>
       {label && (
         <label
           htmlFor={inputId}
@@ -30,4 +36,4 @@ export function Input({ label, id, className, ...props }: InputProps): JSX.Eleme
       />
     </div>
   );
-} 
+}
