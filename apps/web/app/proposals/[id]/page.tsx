@@ -139,6 +139,13 @@ export default function ProposalDetailsPage() {
             setIsLoadingResults(false);
           });
       } else {
+        // Explicitly handle duplicate vote case
+        if (result.reason === "Duplicate vote detected.") {
+          setEligibility({
+            eligible: false,
+            reason: "You have already voted on this proposal.",
+          });
+        }
         addToast(`Failed to cast vote: ${result.reason ?? "Unknown error"}`, "error");
       }
     } catch (error) {
