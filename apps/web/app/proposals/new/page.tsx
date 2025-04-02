@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Button, Card, Input } from "@repo/ui";
+import { Button, Card, Input, useToast } from "@repo/ui";
 import { useRingStore } from "../../../stores/useRingStore";
 import { useProposalsStore } from "../../../stores/useProposalsStore";
 import Link from "next/link";
@@ -11,6 +11,7 @@ export default function NewProposalPage() {
   const { rings } = useRingStore();
   const { createProposal } = useProposalsStore();
   const router = useRouter();
+  const { addToast } = useToast();
 
   const [title, setTitle] = React.useState("");
   const [options, setOptions] = React.useState<string[]>(["", ""]); // Start with two empty options
@@ -29,7 +30,7 @@ export default function NewProposalPage() {
 
   const removeOption = (index: number) => {
     if (options.length <= 2) {
-      alert("A proposal must have at least two options.");
+      addToast("A proposal must have at least two options.", "warning");
       return;
     }
     const newOptions = options.filter((_, i) => i !== index);
@@ -46,17 +47,17 @@ export default function NewProposalPage() {
       .filter((opt) => opt !== "");
 
     if (!trimmedTitle) {
-      alert("Please enter a title for the proposal.");
+      addToast("Please enter a title for the proposal.", "error");
       setIsSubmitting(false);
       return;
     }
     if (validOptions.length < 2) {
-      alert("Please provide at least two valid options.");
+      addToast("Please provide at least two valid options.", "error");
       setIsSubmitting(false);
       return;
     }
     if (!selectedRingId) {
-      alert("Please select a ring of eligible voters.");
+      addToast("Please select a ring of eligible voters.", "error");
       setIsSubmitting(false);
       return;
     }
@@ -68,12 +69,12 @@ export default function NewProposalPage() {
         selectedRingId,
       );
       console.log("Proposal created:", newProposal);
-      alert("Proposal created successfully!");
+      addToast("Proposal created successfully!", "success");
       // Redirect to home page or proposal page after creation
       router.push("/"); // Redirect to home for now
     } catch (error) {
       console.error("Failed to create proposal:", error);
-      alert("Failed to create proposal. See console for details.");
+      addToast("Failed to create proposal. See console for details.", "error");
       setIsSubmitting(false);
     }
     // No need to set isSubmitting false here due to redirect

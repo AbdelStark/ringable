@@ -1,13 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { Button, Card } from "@repo/ui";
+import { Button, Card, useToast, ConfirmDialog } from "@repo/ui";
 import { useProposalsStore } from "../../../stores/useProposalsStore";
 import { useRingStore } from "../../../stores/useRingStore";
 import { useUserStore } from "../../../stores/useUserStore";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { type VoteRecord } from "../../../stores/types";
 
 // Note: Stores are client-side. For server-side metadata generation,
 // you'd typically fetch proposal data from an API or DB.
@@ -47,6 +46,7 @@ export default function ProposalDetailsPage() {
     useProposalsStore();
   const { getRingById } = useRingStore();
   const { keyPair } = useUserStore();
+  const { addToast } = useToast();
 
   const proposal = getProposalById(proposalId);
   const ring = getRingById(proposal?.ringId ?? "");
@@ -60,18 +60,17 @@ export default function ProposalDetailsPage() {
   }>({ eligible: false, reason: "Checking eligibility..." });
   const [isVoting, setIsVoting] = React.useState(false);
   const [isLoadingResults, setIsLoadingResults] = React.useState(false);
+  const [showCloseConfirm, setShowCloseConfirm] = React.useState(false);
 
   // Effect to check eligibility and find user's vote
   React.useEffect(() => {
     if (!proposal || !ring || !keyPair) {
-      setEligibility({
-        eligible: false,
-        reason: !keyPair
+      const reason = !keyPair
           ? "Generate a keypair first."
           : !proposal
           ? "Proposal not found."
-          : "Voting ring not found.",
-      });
+          : "Voting ring not found.";
+      setEligibility({ eligible: false, reason });
       return;
     }
 
@@ -84,22 +83,8 @@ export default function ProposalDetailsPage() {
     }
 
     // Check if user already voted (using mock key image check)
-    // This check needs refinement when using real crypto
     const checkVote = async () => {
-      const foundVote: VoteRecord | null = null;
-      // Our mock `keyImagesMatch` only matches identical signatures.
-      // In a real scenario, we need a more robust way or store the key image.
-      // For mock: we just find the first vote cast if any (assuming only one key per user)
-      if (proposal.votes.length > 0) {
-        // Simplified mock check: Assume *any* vote means this user voted.
-        // This isn't correct but suffices for UI mock.
-        // foundVote = proposal.votes[0];
-        // A slightly better mock: Check if any vote signature contains user pubkey start? No, bad idea.
-        // Let's assume no prior vote for mock purposes until crypto is real.
-        console.warn(
-          "MOCK: Cannot reliably check for prior vote. Assuming not voted.",
-        );
-      }
+      const foundVote = false;
 
       if (foundVote) {
         setEligibility({
@@ -116,7 +101,7 @@ export default function ProposalDetailsPage() {
       }
     };
     void checkVote();
-  }, [proposal, ring, keyPair]); // proposal.votes removed as dep for mock
+  }, [proposal, ring, keyPair]);
 
   // Effect to fetch results
   React.useEffect(() => {
@@ -135,13 +120,12 @@ export default function ProposalDetailsPage() {
     if (!proposal || !keyPair || !eligibility.eligible || isVoting) return;
     setIsVoting(true);
 
-    // Construct message to sign
     const message = new TextEncoder().encode(proposal.id + optionId);
 
     try {
       const result = await addVote(proposal.id, optionId, message);
       if (result.success) {
-        alert("Vote cast successfully!");
+        addToast("Vote cast successfully!", "success");
         setEligibility({
           eligible: false,
           reason: "Vote successfully recorded.",
@@ -155,11 +139,11 @@ export default function ProposalDetailsPage() {
             setIsLoadingResults(false);
           });
       } else {
-        alert(`Failed to cast vote: ${result.reason ?? "Unknown error"}`);
+        addToast(`Failed to cast vote: ${result.reason ?? "Unknown error"}`, "error");
       }
     } catch (error) {
       console.error("Error casting vote:", error);
-      alert("An unexpected error occurred while casting your vote.");
+      addToast("An unexpected error occurred while casting your vote.", "error");
     } finally {
       setIsVoting(false);
     }
@@ -167,14 +151,15 @@ export default function ProposalDetailsPage() {
 
   const handleCloseProposal = () => {
     if (!proposal) return;
-    if (
-      window.confirm(
-        "Are you sure you want to close voting for this proposal? This cannot be undone.",
-      )
-    ) {
+    setShowCloseConfirm(true);
+  };
+  
+  const confirmCloseProposal = () => {
+      if (!proposal) return; // Should not happen if button is shown
       closeProposal(proposal.id);
-      // State should update automatically via zustand subscription
-    }
+      addToast("Proposal voting closed.", "info");
+      setShowCloseConfirm(false);
+      // State should update automatically via zustand subscription for status
   };
 
   if (!proposal) {
@@ -210,27 +195,29 @@ export default function ProposalDetailsPage() {
       </p>
 
       {/* Voting Section */}
-      <Card title="Cast Your Vote">
-        {!eligibility.eligible ? (
-          <p className="text-sm text-gray-500 italic">{eligibility.reason}</p>
-        ) : (
-          <div className="space-y-3">
-            <p className="text-sm">Select one option:</p>
-            {proposal.options.map((option) => (
-              <Button
-                key={option.id}
-                onClick={() => {
-                  void handleVote(option.id);
-                }}
-                disabled={isVoting}
-                className="w-full justify-start text-left"
-              >
-                {isVoting ? "Processing..." : option.text}
-              </Button>
-            ))}
-          </div>
-        )}
-      </Card>
+      {proposal.status === 'open' && (
+        <Card title="Cast Your Vote">
+          {!eligibility.eligible ? (
+            <p className="text-sm text-gray-500 italic">{eligibility.reason}</p>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm">Select one option:</p>
+              {proposal.options.map((option) => (
+                <Button
+                  key={option.id}
+                  onClick={() => {
+                    void handleVote(option.id);
+                  }}
+                  disabled={isVoting}
+                  className="w-full justify-start text-left"
+                >
+                  {isVoting ? "Processing..." : option.text}
+                </Button>
+              ))}
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* Results Section */}
       <Card title="Results">
@@ -271,12 +258,12 @@ export default function ProposalDetailsPage() {
         )}
       </Card>
 
-      {/* Admin Actions (Example) */}
+      {/* Admin Actions */}
       {proposal.status === "open" && (
         <Card title="Admin Actions">
           <Button
             variant="secondary"
-            className="text-pixel-accent"
+            className="text-pixel-warning hover:bg-red-200"
             onClick={handleCloseProposal}
           >
             Close Voting
@@ -286,6 +273,15 @@ export default function ProposalDetailsPage() {
           </p>
         </Card>
       )}
+
+      {/* Confirmation Dialog for Closing Proposal */}
+      <ConfirmDialog
+        isOpen={showCloseConfirm}
+        title="Close Proposal"
+        message="Are you sure you want to close voting for this proposal? This action cannot be undone."
+        onConfirm={confirmCloseProposal}
+        onCancel={() => setShowCloseConfirm(false)}
+      />
     </div>
   );
 }

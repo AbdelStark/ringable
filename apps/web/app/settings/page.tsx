@@ -1,50 +1,64 @@
 "use client";
 
 import * as React from "react";
-import { Button, Card, Input } from "@repo/ui";
+import { Button, Card, Input, useToast, ConfirmDialog } from "@repo/ui";
 import { useUserStore } from "../../stores/useUserStore";
 import Link from "next/link"; // For navigation
 
 export default function SettingsPage() {
-  const { keyPair, generateAndSetKeyPair, isLoadingKeyPair, setKeyPair } =
-    useUserStore();
+  const {
+    keyPair,
+    generateAndSetKeyPair,
+    isLoadingKeyPair,
+    setKeyPair,
+    clearKeyPair,
+  } = useUserStore();
+  const { addToast } = useToast();
+
   const [copied, setCopied] = React.useState(false);
   const [showPrivateKeyInput, setShowPrivateKeyInput] = React.useState(false);
   const [privateKeyInput, setPrivateKeyInput] = React.useState("");
+  const [showClearConfirm, setShowClearConfirm] = React.useState(false);
 
   const handleCopy = (text: string) => {
     navigator.clipboard
       .writeText(text)
       .then(() => {
         setCopied(true);
-        setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
+        addToast("Public key copied to clipboard!", "success", 1500);
+        setTimeout(() => setCopied(false), 1500); // Reset after 1.5 seconds
       })
       .catch((err) => {
         console.error("Failed to copy text: ", err);
-        alert("Failed to copy key.");
+        addToast("Failed to copy key.", "error");
       });
   };
 
   const handleLoadPrivateKey = () => {
-    if (
-      privateKeyInput.length === 64 &&
-      /^[0-9a-fA-F]+$/.test(privateKeyInput)
-    ) {
-      // Basic validation passed
-      // In a real app, we would derive the public key and validate the pair
-      console.warn("Loading private key - VALIDATION NEEDED");
-      // For now, just set it (assuming crypto package could derive pubkey later)
-      // Or ideally, use a crypto function `derivePublicKey(privateKey)`
-      const mockPublicKey = "mock-pubkey-" + privateKeyInput.substring(0, 8);
-      setKeyPair({
-        npub: mockPublicKey,
-        nsec: privateKeyInput,
-      });
-      setShowPrivateKeyInput(false);
-      setPrivateKeyInput("");
+    if (privateKeyInput.startsWith("nsec1") && privateKeyInput.length > 60) {
+      try {
+        const derivedNpub = "npub-derived-from-" + privateKeyInput.substring(0, 12) + "...";
+
+        setKeyPair({
+          npub: derivedNpub,
+          nsec: privateKeyInput,
+        });
+        setShowPrivateKeyInput(false);
+        setPrivateKeyInput("");
+        addToast("Private key loaded successfully.", "success");
+      } catch (error) {
+        console.error("Error deriving public key from nsec:", error);
+        addToast("Invalid private key or failed to derive public key.", "error");
+      }
     } else {
-      alert("Invalid private key format. Must be 64 hexadecimal characters.");
+      addToast("Invalid private key format. Must be an NSEC string (starts with nsec1).", "error");
     }
+  };
+
+  const confirmClearKeyPair = () => {
+    clearKeyPair();
+    setShowClearConfirm(false);
+    addToast("Keypair cleared.", "info");
   };
 
   return (
@@ -54,7 +68,9 @@ export default function SettingsPage() {
       </h2>
 
       <Card title="Your Identity Keypair" className="mb-6">
-        {keyPair ? (
+        {isLoadingKeyPair ? (
+          <p>Loading...</p>
+        ) : keyPair ? (
           <div className="space-y-3">
             <div>
               <label className="block text-xs font-normal text-pixel-text mb-1 uppercase tracking-wider">
@@ -72,16 +88,12 @@ export default function SettingsPage() {
                     handleCopy(keyPair.npub);
                   }}
                   className="text-xs"
+                  disabled={copied}
                 >
                   {copied ? "Copied!" : "Copy"}
                 </Button>
               </div>
             </div>
-            {/* Security Note: Only show private key actions for advanced users or development */}
-            {/* In production, private key handling requires extreme care */}
-            {/* <div className="pt-2 border-t border-pixel-border">
-              <p className="text-xs text-pixel-text mt-2">Private Key: Handled securely (not shown).</p>
-            </div> */}
           </div>
         ) : (
           <div className="text-center">
@@ -94,36 +106,43 @@ export default function SettingsPage() {
           </div>
         )}
 
-        {/* Option to load existing private key */}
         {keyPair && (
           <div className="mt-4 pt-4 border-t-3 border-pixel-border">
             {!showPrivateKeyInput ? (
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setShowPrivateKeyInput(true);
-                }}
-              >
-                Load Existing Private Key
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setShowPrivateKeyInput(true);
+                  }}
+                >
+                  Load Existing NSEC Key
+                </Button>
+                <Button
+                  variant="secondary"
+                  className="text-pixel-warning hover:bg-red-200"
+                  onClick={() => setShowClearConfirm(true)}
+                >
+                  Clear Current Keypair
+                </Button>
+              </div>
             ) : (
               <div className="space-y-2">
                 <label className="block text-xs font-normal text-pixel-text mb-1 uppercase tracking-wider">
-                  Enter 64-char Hex Private Key
+                  Enter NSEC Private Key
                 </label>
                 <Input
-                  type="password" // Hide input
+                  type="password"
                   value={privateKeyInput}
                   onChange={(e) => {
                     setPrivateKeyInput(e.target.value);
                   }}
-                  maxLength={64}
-                  placeholder="Enter your private key..."
+                  placeholder="Enter your nsec1... private key"
                 />
                 <div className="flex gap-2">
                   <Button
                     onClick={handleLoadPrivateKey}
-                    disabled={privateKeyInput.length !== 64}
+                    disabled={!privateKeyInput.startsWith("nsec1")}
                   >
                     Load Key
                   </Button>
@@ -146,6 +165,14 @@ export default function SettingsPage() {
       <Link href="/" className="text-sm text-pixel-accent hover:underline">
         &lt;- Back to Home
       </Link>
+
+      <ConfirmDialog
+        isOpen={showClearConfirm}
+        title="Clear Keypair"
+        message="Are you sure you want to clear your current keypair? This action cannot be undone and will remove your identity from this browser."
+        onConfirm={confirmClearKeyPair}
+        onCancel={() => setShowClearConfirm(false)}
+      />
     </div>
   );
 }

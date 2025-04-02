@@ -33,6 +33,7 @@ interface UserState {
   isLoadingKeyPair: boolean;
   generateAndSetKeyPair: () => Promise<void>;
   setKeyPair: (keyPair: KeyPair | null) => void;
+  clearKeyPair: () => void;
 }
 
 // Define the type for the persisted part of the state
@@ -44,7 +45,7 @@ type UserPersist = (
   config: StateCreator<UserState>,
   options: Omit<PersistOptions<UserState, PersistedUserState>, "storage"> & {
     storage: PersistStorage<PersistedUserState> | undefined;
-  },
+  }
 ) => StateCreator<UserState>;
 
 export const useUserStore = create<UserState>(
@@ -88,12 +89,16 @@ export const useUserStore = create<UserState>(
       setKeyPair: (keyPair: KeyPair | null) => {
         set({ keyPair });
       },
+
+      clearKeyPair: () => {
+        set({ keyPair: null });
+      },
     }),
     {
       name: "ringable-user-storage",
       storage: createJSONStorage(() => localStorage),
       // Use Pick to correctly type the partialized state
       partialize: (state): PersistedUserState => ({ keyPair: state.keyPair }),
-    },
-  ),
+    }
+  )
 );
