@@ -66,10 +66,10 @@ export default function ProposalDetailsPage() {
   React.useEffect(() => {
     if (!proposal || !ring || !keyPair) {
       const reason = !keyPair
-          ? "Generate a keypair first."
-          : !proposal
-          ? "Proposal not found."
-          : "Voting ring not found.";
+        ? "Generate a keypair first."
+        : !proposal
+        ? "Proposal not found."
+        : "Voting ring not found.";
       setEligibility({ eligible: false, reason });
       return;
     }
@@ -146,11 +146,17 @@ export default function ProposalDetailsPage() {
             reason: "You have already voted on this proposal.",
           });
         }
-        addToast(`Failed to cast vote: ${result.reason ?? "Unknown error"}`, "error");
+        addToast(
+          `Failed to cast vote: ${result.reason ?? "Unknown error"}`,
+          "error",
+        );
       }
     } catch (error) {
       console.error("Error casting vote:", error);
-      addToast("An unexpected error occurred while casting your vote.", "error");
+      addToast(
+        "An unexpected error occurred while casting your vote.",
+        "error",
+      );
     } finally {
       setIsVoting(false);
     }
@@ -160,13 +166,13 @@ export default function ProposalDetailsPage() {
     if (!proposal) return;
     setShowCloseConfirm(true);
   };
-  
+
   const confirmCloseProposal = () => {
-      if (!proposal) return; // Should not happen if button is shown
-      closeProposal(proposal.id);
-      addToast("Proposal voting closed.", "info");
-      setShowCloseConfirm(false);
-      // State should update automatically via zustand subscription for status
+    if (!proposal) return; // Should not happen if button is shown
+    closeProposal(proposal.id);
+    addToast("Proposal voting closed.", "info");
+    setShowCloseConfirm(false);
+    // State should update automatically via zustand subscription for status
   };
 
   if (!proposal) {
@@ -202,7 +208,7 @@ export default function ProposalDetailsPage() {
       </p>
 
       {/* Voting Section */}
-      {proposal.status === 'open' && (
+      {proposal.status === "open" && (
         <Card title="Cast Your Vote">
           {!eligibility.eligible ? (
             <p className="text-sm text-gray-500 italic">{eligibility.reason}</p>

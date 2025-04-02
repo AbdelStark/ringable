@@ -51,7 +51,9 @@ export default function SettingsPage() {
       const derivedNpub = user.npub;
 
       if (!derivedNpub) {
-        throw new Error("Failed to derive public key (npub) from the provided private key.");
+        throw new Error(
+          "Failed to derive public key (npub) from the provided private key.",
+        );
       }
 
       // 3. Set the derived keypair in the store
@@ -63,10 +65,14 @@ export default function SettingsPage() {
       setShowPrivateKeyInput(false);
       setPrivateKeyInput("");
       addToast("Private key loaded successfully.", "success");
-
     } catch (error: any) {
       console.error("Error loading private key:", error);
-      addToast(`Error loading key: ${error.message || "Invalid nsec format or derivation failed."}`, "error");
+      addToast(
+        `Error loading key: ${
+          error.message || "Invalid nsec format or derivation failed."
+        }`,
+        "error",
+      );
     } finally {
       setIsLoadingKey(false);
     }
@@ -158,8 +164,12 @@ export default function SettingsPage() {
                 />
                 <div className="flex gap-2">
                   <Button
-                    onClick={() => { void handleLoadPrivateKey(); }}
-                    disabled={!privateKeyInput.startsWith("nsec1") || isLoadingKey}
+                    onClick={() => {
+                      void handleLoadPrivateKey();
+                    }}
+                    disabled={
+                      !privateKeyInput.startsWith("nsec1") || isLoadingKey
+                    }
                   >
                     {isLoadingKey ? "Loading..." : "Load Key"}
                   </Button>

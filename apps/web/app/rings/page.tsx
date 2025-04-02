@@ -6,6 +6,7 @@ import { useRingStore } from "../../stores/useRingStore";
 import { useUserStore } from "../../stores/useUserStore"; // To optionally add own key
 import Link from "next/link";
 import { type Ring } from "../../stores/types";
+import { NDKPrivateKeySigner } from "@nostr-dev-kit/ndk"; // Import NDK
 
 export default function RingsPage() {
   const { rings, addRing, updateRing, removeRing } = useRingStore();
@@ -20,6 +21,36 @@ export default function RingsPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
   const [ringToDelete, setRingToDelete] = React.useState<Ring | null>(null);
 
+  // New state for generating member keys
+  const [isGeneratingMemberKey, setIsGeneratingMemberKey] =
+    React.useState(false);
+  const [lastGeneratedNsec, setLastGeneratedNsec] = React.useState<
+    string | null
+  >(null);
+  const [generatedKeyCopied, setGeneratedKeyCopied] = React.useState(false);
+
+  const handleCopy = (text: string, type: "npub" | "nsec" = "npub") => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        if (type === "nsec") {
+          setGeneratedKeyCopied(true);
+          addToast("Private key (nsec) copied! SAVE IT securely.", "warning");
+          setTimeout(() => setGeneratedKeyCopied(false), 2000);
+        } else {
+          addToast("Public key copied.", "success", 1500);
+          // Assuming simple copy feedback for npub if needed elsewhere
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to copy text: ", err);
+        addToast(
+          `Failed to copy ${type === "nsec" ? "private key" : "key"}.`,
+          "error",
+        );
+      });
+  };
+
   const handleCreateRing = () => {
     if (newRingName.trim()) {
       addRing(newRingName.trim(), []);
@@ -33,8 +64,10 @@ export default function RingsPage() {
   const startEditing = (ring: Ring) => {
     setEditingRingId(ring.id);
     setEditRingName(ring.name);
-    setEditMembers([...ring.memberPublicKeys]); // Clone members array
+    setEditMembers([...ring.memberPublicKeys]);
     setNewMemberKey("");
+    setLastGeneratedNsec(null); // Clear generated key when starting edit
+    setGeneratedKeyCopied(false);
   };
 
   const cancelEditing = () => {
@@ -42,6 +75,8 @@ export default function RingsPage() {
     setEditRingName("");
     setEditMembers([]);
     setNewMemberKey("");
+    setLastGeneratedNsec(null);
+    setGeneratedKeyCopied(false);
   };
 
   const saveChanges = () => {
@@ -58,26 +93,27 @@ export default function RingsPage() {
     cancelEditing();
   };
 
-  const handleAddMember = (ringId: string, keyToAdd: string) => {
+  const handleAddMember = (keyToAdd: string) => {
+    const trimmedKey = keyToAdd.trim();
     if (
-      !keyToAdd ||
-      (!keyToAdd.trim().startsWith("npub1") &&
-        (keyToAdd.trim().length !== 64 ||
-          !/^[0-9a-fA-F]+$/.test(keyToAdd.trim())))
+      !trimmedKey ||
+      (!trimmedKey.startsWith("npub1") &&
+        (trimmedKey.length !== 64 || !/^[0-9a-fA-F]+$/.test(trimmedKey)))
     ) {
       addToast(
-        "Invalid public key format. Must be either an npub1 string or 64 hexadecimal characters.",
+        "Invalid public key format. Must be npub1... or 64 hex chars.",
         "error",
       );
       return;
     }
-    if (editMembers.includes(keyToAdd.trim())) {
+    if (editMembers.includes(trimmedKey)) {
       addToast("Public key already in the ring.", "warning");
       return;
     }
-    setEditMembers([...editMembers, keyToAdd.trim()]);
-    setNewMemberKey(""); // Clear input after adding
-    addToast("Member added to ring successfully.", "success");
+    setEditMembers([...editMembers, trimmedKey]);
+    setNewMemberKey("");
+    setLastGeneratedNsec(null); // Clear generated nsec display if manually adding
+    addToast("Member added manually.", "success");
   };
 
   const handleRemoveMember = (keyToRemove: string) => {
@@ -98,9 +134,41 @@ export default function RingsPage() {
       if (editingRingId === ringToDelete.id) {
         cancelEditing();
       }
-      addToast(`Ring "${ringToDelete.name}" deleted successfully!`, "info");
+      addToast(`Ring "${ringToDelete.name}" deleted.`, "info");
       setShowDeleteConfirm(false);
       setRingToDelete(null);
+    }
+  };
+
+  const handleGenerateAndAddMember = async () => {
+    setIsGeneratingMemberKey(true);
+    setLastGeneratedNsec(null); // Clear previous one
+    setGeneratedKeyCopied(false);
+    try {
+      const signer = NDKPrivateKeySigner.generate();
+      const nsec = signer.nsec;
+      const user = await signer.user();
+      const npub = user.npub;
+
+      if (!nsec || !npub) {
+        throw new Error("Key generation failed.");
+      }
+
+      if (editMembers.includes(npub)) {
+        addToast("Generated key already exists in this ring.", "warning");
+      } else {
+        setEditMembers([...editMembers, npub]);
+        setLastGeneratedNsec(nsec);
+        addToast(
+          "New member key generated and added. SAVE the nsec below!",
+          "success",
+        );
+      }
+    } catch (error: any) {
+      console.error("Failed to generate member key:", error);
+      addToast(`Error generating key: ${error.message}`, "error");
+    } finally {
+      setIsGeneratingMemberKey(false);
     }
   };
 
@@ -144,7 +212,7 @@ export default function RingsPage() {
             <Card key={ring.id} className="relative">
               {editingRingId === ring.id ? (
                 // Editing View
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <Input
                     label="Ring Name"
                     value={editRingName}
@@ -167,13 +235,16 @@ export default function RingsPage() {
                             key={key}
                             className="flex justify-between items-center text-xs break-all"
                           >
-                            <span>{key}</span>
+                            <span title={key}>
+                              {key.substring(0, 12)}...
+                              {key.substring(key.length - 6)}
+                            </span>
                             <Button
                               variant="secondary"
                               onClick={() => {
                                 handleRemoveMember(key);
                               }}
-                              className="text-red-500 hover:text-red-700 text-xs px-1 py-0 leading-none"
+                              className="text-red-500 hover:text-red-700 text-xs px-1 py-0 leading-none shrink-0 ml-2"
                               aria-label={`Remove ${key}`}
                             >
                               X
@@ -182,7 +253,7 @@ export default function RingsPage() {
                         ))}
                       </ul>
                     )}
-                    <div className="flex gap-2 items-end">
+                    <div className="flex gap-2 items-end mt-2">
                       <Input
                         label="Add Member NPUB"
                         placeholder="Enter Nostr Npub key..."
@@ -194,28 +265,80 @@ export default function RingsPage() {
                         className="flex-grow text-xs"
                       />
                       <Button
+                        type="button"
                         variant="secondary"
-                        onClick={() => {
-                          handleAddMember(ring.id, newMemberKey);
-                        }}
+                        onClick={() => handleAddMember(newMemberKey)}
+                        disabled={
+                          !newMemberKey.trim() ||
+                          newMemberKey.trim().length < 60
+                        }
                         className="shrink-0"
                       >
                         Add
                       </Button>
                     </div>
-                    {keyPair && !editMembers.includes(keyPair.npub) && (
+                    <div className="mt-3 pt-3 border-t border-dashed border-pixel-border">
                       <Button
+                        type="button"
                         variant="secondary"
                         onClick={() => {
-                          handleAddMember(ring.id, keyPair.npub);
+                          void handleGenerateAndAddMember();
                         }}
-                        className="text-xs mt-2"
+                        disabled={isGeneratingMemberKey}
                       >
-                        Add My Key ({keyPair.npub.substring(0, 6)}...)
+                        {isGeneratingMemberKey
+                          ? "Generating..."
+                          : "Generate New Member Key"}
                       </Button>
+                      {lastGeneratedNsec && (
+                        <div className="mt-2 p-2 border border-yellow-500 bg-yellow-50">
+                          <p className="text-xs font-bold text-red-700 uppercase mb-1">
+                            Save This Private Key (nsec)!
+                          </p>
+                          <p className="text-xs text-gray-700 mb-2">
+                            This key provides access to vote as this new member.
+                            It will not be shown again.
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              readOnly
+                              value={lastGeneratedNsec}
+                              className="bg-gray-100 text-xs flex-grow"
+                            />
+                            <Button
+                              variant="secondary"
+                              onClick={() =>
+                                handleCopy(lastGeneratedNsec, "nsec")
+                              }
+                              className="text-xs shrink-0"
+                              disabled={generatedKeyCopied}
+                            >
+                              {generatedKeyCopied ? "Copied!" : "Copy NSEC"}
+                            </Button>
+                          </div>
+                          <button
+                            onClick={() => setLastGeneratedNsec(null)}
+                            className="text-xs text-gray-500 hover:underline mt-2"
+                          >
+                            Dismiss
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    {keyPair && !editMembers.includes(keyPair.npub) && (
+                      <div className="mt-3 pt-3 border-t border-dashed border-pixel-border">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={() => handleAddMember(keyPair.npub)}
+                          className="text-xs"
+                        >
+                          Add My Key ({keyPair.npub.substring(0, 10)}...)
+                        </Button>
+                      </div>
                     )}
                   </div>
-                  <div className="flex gap-2 pt-3 border-t-3 border-pixel-border">
+                  <div className="flex gap-2 pt-4 border-t-3 border-pixel-border mt-4">
                     <Button onClick={saveChanges}>Save Changes</Button>
                     <Button variant="secondary" onClick={cancelEditing}>
                       Cancel
@@ -231,10 +354,6 @@ export default function RingsPage() {
                   <p className="text-xs mb-2">
                     Members: {ring.memberPublicKeys.length}
                   </p>
-                  {/* Optional: List first few members */}
-                  {/* {ring.memberPublicKeys.slice(0, 3).map(key => (
-                    <p key={key} className="text-xs truncate">- {key}</p>
-                  ))} */}
                   <div className="flex gap-2 mt-3">
                     <Button
                       onClick={() => {
@@ -245,7 +364,7 @@ export default function RingsPage() {
                     </Button>
                     <Button
                       variant="secondary"
-                      className="text-pixel-accent"
+                      className="text-pixel-warning hover:bg-red-200"
                       onClick={() => {
                         handleDeleteRing(ring.id);
                       }}

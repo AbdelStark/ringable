@@ -45,7 +45,7 @@ type UserPersist = (
   config: StateCreator<UserState>,
   options: Omit<PersistOptions<UserState, PersistedUserState>, "storage"> & {
     storage: PersistStorage<PersistedUserState> | undefined;
-  }
+  },
 ) => StateCreator<UserState>;
 
 export const useUserStore = create<UserState>(
@@ -99,6 +99,6 @@ export const useUserStore = create<UserState>(
       storage: createJSONStorage(() => localStorage),
       // Use Pick to correctly type the partialized state
       partialize: (state): PersistedUserState => ({ keyPair: state.keyPair }),
-    }
-  )
+    },
+  ),
 );

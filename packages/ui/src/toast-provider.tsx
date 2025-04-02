@@ -36,9 +36,12 @@ export function ToastProvider({
   const addToast = React.useCallback(
     (message: string, type: ToastType = "info", duration = 3000) => {
       const id = Math.random().toString(36).substring(2, 9);
-      setToasts((prevToasts) => [{ id, message, type, duration }, ...prevToasts]);
+      setToasts((prevToasts) => [
+        { id, message, type, duration },
+        ...prevToasts,
+      ]);
     },
-    []
+    [],
   );
 
   const removeToast = React.useCallback((id: string) => {

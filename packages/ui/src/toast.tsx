@@ -42,7 +42,9 @@ export function Toast({
       style={{ imageRendering: "pixelated" }}
     >
       <div className="mr-2 text-xl font-bold">{typeIcon[type]}</div>
-      <div className="flex-1 text-sm uppercase tracking-wider break-words">{message}</div>
+      <div className="flex-1 text-sm uppercase tracking-wider break-words">
+        {message}
+      </div>
       {onClose && (
         <button
           onClick={onClose}
