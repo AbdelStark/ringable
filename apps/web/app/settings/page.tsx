@@ -4,6 +4,7 @@ import * as React from "react";
 import { Button, Card, Input, useToast, ConfirmDialog } from "@repo/ui";
 import { useUserStore } from "../../stores/useUserStore";
 import Link from "next/link"; // For navigation
+import { NDKPrivateKeySigner } from "@nostr-dev-kit/ndk"; // Import NDK signer
 
 export default function SettingsPage() {
   const {
@@ -19,6 +20,7 @@ export default function SettingsPage() {
   const [showPrivateKeyInput, setShowPrivateKeyInput] = React.useState(false);
   const [privateKeyInput, setPrivateKeyInput] = React.useState("");
   const [showClearConfirm, setShowClearConfirm] = React.useState(false);
+  const [isLoadingKey, setIsLoadingKey] = React.useState(false);
 
   const handleCopy = (text: string) => {
     navigator.clipboard
@@ -34,24 +36,39 @@ export default function SettingsPage() {
       });
   };
 
-  const handleLoadPrivateKey = () => {
-    if (privateKeyInput.startsWith("nsec1") && privateKeyInput.length > 60) {
-      try {
-        const derivedNpub = "npub-derived-from-" + privateKeyInput.substring(0, 12) + "...";
+  const handleLoadPrivateKey = async () => {
+    if (!privateKeyInput.startsWith("nsec1")) {
+      addToast("Invalid format. Private key must start with 'nsec1'.", "error");
+      return;
+    }
+    setIsLoadingKey(true);
+    try {
+      // 1. Create signer instance from the nsec input
+      const signer = new NDKPrivateKeySigner(privateKeyInput);
 
-        setKeyPair({
-          npub: derivedNpub,
-          nsec: privateKeyInput,
-        });
-        setShowPrivateKeyInput(false);
-        setPrivateKeyInput("");
-        addToast("Private key loaded successfully.", "success");
-      } catch (error) {
-        console.error("Error deriving public key from nsec:", error);
-        addToast("Invalid private key or failed to derive public key.", "error");
+      // 2. Get the user object to derive npub
+      const user = await signer.user();
+      const derivedNpub = user.npub;
+
+      if (!derivedNpub) {
+        throw new Error("Failed to derive public key (npub) from the provided private key.");
       }
-    } else {
-      addToast("Invalid private key format. Must be an NSEC string (starts with nsec1).", "error");
+
+      // 3. Set the derived keypair in the store
+      setKeyPair({
+        npub: derivedNpub,
+        nsec: privateKeyInput,
+      });
+
+      setShowPrivateKeyInput(false);
+      setPrivateKeyInput("");
+      addToast("Private key loaded successfully.", "success");
+
+    } catch (error: any) {
+      console.error("Error loading private key:", error);
+      addToast(`Error loading key: ${error.message || "Invalid nsec format or derivation failed."}`, "error");
+    } finally {
+      setIsLoadingKey(false);
     }
   };
 
@@ -141,10 +158,10 @@ export default function SettingsPage() {
                 />
                 <div className="flex gap-2">
                   <Button
-                    onClick={handleLoadPrivateKey}
-                    disabled={!privateKeyInput.startsWith("nsec1")}
+                    onClick={() => { void handleLoadPrivateKey(); }}
+                    disabled={!privateKeyInput.startsWith("nsec1") || isLoadingKey}
                   >
-                    Load Key
+                    {isLoadingKey ? "Loading..." : "Load Key"}
                   </Button>
                   <Button
                     variant="secondary"
