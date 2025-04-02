@@ -97,7 +97,7 @@ export default function RootLayout({
               <div className="flex gap-2 md:gap-4 items-center">
                 {/* Account Switcher */}
                 <AccountSwitcherWrapper />
-                
+
                 <nav className="flex gap-3 md:gap-4 items-center">
                   <Link
                     href="/rings"

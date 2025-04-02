@@ -23,15 +23,17 @@ export function AccountManager({
 }: AccountManagerProps): JSX.Element {
   const [newAccountName, setNewAccountName] = React.useState("");
   const [isCreating, setIsCreating] = React.useState(false);
-  const [editingAccountId, setEditingAccountId] = React.useState<string | null>(null);
+  const [editingAccountId, setEditingAccountId] = React.useState<string | null>(
+    null,
+  );
   const [editAccountName, setEditAccountName] = React.useState("");
-  
+
   const handleCreateAccount = async () => {
     if (!newAccountName.trim()) {
       alert("Please enter a name for the new account.");
       return;
     }
-    
+
     setIsCreating(true);
     try {
       await onCreateAccount(newAccountName.trim());
@@ -43,38 +45,42 @@ export function AccountManager({
       setIsCreating(false);
     }
   };
-  
+
   const startEditing = (account: Account) => {
     setEditingAccountId(account.id);
     setEditAccountName(account.name);
   };
-  
+
   const cancelEditing = () => {
     setEditingAccountId(null);
     setEditAccountName("");
   };
-  
+
   const saveAccountName = (accountId: string) => {
     if (editAccountName.trim()) {
       onRenameAccount(accountId, editAccountName.trim());
       cancelEditing();
     }
   };
-  
+
   const handleDeleteAccount = (accountId: string) => {
     if (accounts.length <= 1) {
       alert("Cannot delete the only account. Create another account first.");
       return;
     }
-    
-    if (window.confirm("Are you sure you want to delete this account? This cannot be undone.")) {
+
+    if (
+      window.confirm(
+        "Are you sure you want to delete this account? This cannot be undone.",
+      )
+    ) {
       onDeleteAccount(accountId);
       if (editingAccountId === accountId) {
         cancelEditing();
       }
     }
   };
-  
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     // Provide visual feedback (toast or alert)
@@ -90,7 +96,7 @@ export function AccountManager({
             onChange={(e) => setNewAccountName(e.target.value)}
             placeholder="e.g., Main Wallet, Anonymous Voter..."
           />
-          <Button 
+          <Button
             onClick={handleCreateAccount}
             disabled={isCreating || !newAccountName.trim()}
           >
@@ -98,19 +104,19 @@ export function AccountManager({
           </Button>
         </div>
       </Card>
-      
+
       <Card title="Your Accounts">
         {accounts.length === 0 ? (
           <p className="text-sm text-gray-500">No accounts created yet.</p>
         ) : (
           <ul className="space-y-4">
             {accounts.map((account) => (
-              <li 
-                key={account.id} 
+              <li
+                key={account.id}
                 className={`border-3 ${
-                  account.id === activeAccountId 
-                  ? "border-pixel-accent" 
-                  : "border-gray-200"
+                  account.id === activeAccountId
+                    ? "border-pixel-accent"
+                    : "border-gray-200"
                 } p-3 relative`}
               >
                 {editingAccountId === account.id ? (
@@ -122,16 +128,13 @@ export function AccountManager({
                       onChange={(e) => setEditAccountName(e.target.value)}
                     />
                     <div className="flex gap-2">
-                      <Button 
+                      <Button
                         onClick={() => saveAccountName(account.id)}
                         disabled={!editAccountName.trim()}
                       >
                         Save
                       </Button>
-                      <Button 
-                        variant="secondary" 
-                        onClick={cancelEditing}
-                      >
+                      <Button variant="secondary" onClick={cancelEditing}>
                         Cancel
                       </Button>
                     </div>
@@ -140,8 +143,8 @@ export function AccountManager({
                   // View Mode
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <div 
-                        className="w-6 h-6 rounded-full" 
+                      <div
+                        className="w-6 h-6 rounded-full"
                         style={{ backgroundColor: account.color }}
                       ></div>
                       <h3 className="font-bold text-sm">{account.name}</h3>
@@ -151,22 +154,22 @@ export function AccountManager({
                         </span>
                       )}
                     </div>
-                    
+
                     <div className="flex gap-1 mb-3">
                       <div className="font-mono text-xs text-gray-600 flex-grow truncate">
                         {account.npub}
                       </div>
-                      <button 
+                      <button
                         onClick={() => copyToClipboard(account.npub)}
                         className="text-xs text-pixel-accent hover:underline"
                       >
                         Copy
                       </button>
                     </div>
-                    
+
                     <div className="flex gap-2">
                       {account.id !== activeAccountId && (
-                        <Button 
+                        <Button
                           onClick={() => onSelectAccount(account.id)}
                           variant="secondary"
                           className="text-xs"
@@ -174,7 +177,7 @@ export function AccountManager({
                           Switch to This Account
                         </Button>
                       )}
-                      <Button 
+                      <Button
                         onClick={() => startEditing(account)}
                         variant="secondary"
                         className="text-xs"
@@ -182,7 +185,7 @@ export function AccountManager({
                         Rename
                       </Button>
                       {accounts.length > 1 && (
-                        <Button 
+                        <Button
                           onClick={() => handleDeleteAccount(account.id)}
                           variant="secondary"
                           className="text-xs text-red-500 hover:bg-red-50"
@@ -200,4 +203,4 @@ export function AccountManager({
       </Card>
     </div>
   );
-} 
+}

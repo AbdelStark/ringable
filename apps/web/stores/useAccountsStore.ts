@@ -33,7 +33,7 @@ type AccountsPersist = (
   options: PersistOptions<
     AccountsState,
     Pick<AccountsState, "accounts" | "activeAccountId">
-  >
+  >,
 ) => StateCreator<AccountsState>;
 
 export const useAccountsStore = create<AccountsState>(
@@ -78,7 +78,7 @@ export const useAccountsStore = create<AccountsState>(
           return get().addAccount(
             name || `Account ${get().accounts.length + 1}`,
             npub,
-            nsec
+            nsec,
           );
         } catch (error) {
           console.error("Failed to generate account:", error);
@@ -113,7 +113,7 @@ export const useAccountsStore = create<AccountsState>(
 
         set((state) => ({
           accounts: state.accounts.map((account) =>
-            account.id === id ? { ...account, name: newName.trim() } : account
+            account.id === id ? { ...account, name: newName.trim() } : account,
           ),
         }));
       },
@@ -135,7 +135,7 @@ export const useAccountsStore = create<AccountsState>(
       updateAccountColor: (id: string, color: string) => {
         set((state) => ({
           accounts: state.accounts.map((account) =>
-            account.id === id ? { ...account, color } : account
+            account.id === id ? { ...account, color } : account,
           ),
         }));
       },
@@ -147,8 +147,8 @@ export const useAccountsStore = create<AccountsState>(
         accounts: state.accounts,
         activeAccountId: state.activeAccountId,
       }),
-    }
-  )
+    },
+  ),
 );
 
 // Helper function to generate a random color

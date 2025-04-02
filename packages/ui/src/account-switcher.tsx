@@ -25,7 +25,7 @@ export function AccountSwitcher({
 
   const activeAccount = React.useMemo(
     () => accounts.find((acc) => acc.id === activeAccountId) || accounts[0],
-    [accounts, activeAccountId]
+    [accounts, activeAccountId],
   );
 
   const toggleDropdown = () => {
@@ -42,7 +42,7 @@ export function AccountSwitcher({
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        dropdownRef.current && 
+        dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
@@ -71,15 +71,22 @@ export function AccountSwitcher({
               style={{ backgroundColor: activeAccount.color }}
             ></div>
             <span className="text-xs font-mono truncate max-w-[100px]">
-              {activeAccount.name || activeAccount.npub.substring(0, 10) + "..."}
+              {activeAccount.name ||
+                activeAccount.npub.substring(0, 10) + "..."}
             </span>
-            <span className={`text-xs ml-1 ${isOpen ? "rotate-180" : ""}`}>▼</span>
+            <span className={`text-xs ml-1 ${isOpen ? "rotate-180" : ""}`}>
+              ▼
+            </span>
           </>
         ) : (
           <>
             <div className="w-5 h-5 rounded-full bg-gray-300"></div>
-            <span className="text-xs font-mono truncate max-w-[100px]">No Account</span>
-            <span className={`text-xs ml-1 ${isOpen ? "rotate-180" : ""}`}>▼</span>
+            <span className="text-xs font-mono truncate max-w-[100px]">
+              No Account
+            </span>
+            <span className={`text-xs ml-1 ${isOpen ? "rotate-180" : ""}`}>
+              ▼
+            </span>
           </>
         )}
       </button>
@@ -89,7 +96,9 @@ export function AccountSwitcher({
         <div className="absolute right-0 top-full mt-1 z-50 w-64 border-3 border-pixel-border bg-white shadow-pixel py-2 animate-bounce-in">
           <div className="max-h-60 overflow-y-auto px-2">
             {accounts.length === 0 ? (
-              <p className="text-xs text-gray-500 px-3 py-2">No accounts found</p>
+              <p className="text-xs text-gray-500 px-3 py-2">
+                No accounts found
+              </p>
             ) : (
               <ul className="space-y-1.5">
                 {accounts.map((account) => (
@@ -111,7 +120,8 @@ export function AccountSwitcher({
                           {account.name}
                         </p>
                         <p className="text-[10px] text-gray-600 font-mono truncate">
-                          {account.npub.substring(0, 6)}...{account.npub.substring(account.npub.length - 4)}
+                          {account.npub.substring(0, 6)}...
+                          {account.npub.substring(account.npub.length - 4)}
                         </p>
                       </div>
                       {account.id === activeAccountId && (
@@ -137,4 +147,4 @@ export function AccountSwitcher({
       )}
     </div>
   );
-} 
+}

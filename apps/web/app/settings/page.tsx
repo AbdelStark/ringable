@@ -1,21 +1,33 @@
 "use client";
 
 import * as React from "react";
-import { Button, Card, Input, useToast, ConfirmDialog, AccountManager } from "@repo/ui";
+import {
+  Button,
+  Card,
+  Input,
+  useToast,
+  ConfirmDialog,
+  AccountManager,
+} from "@repo/ui";
 import { useUserStore } from "../../stores/useUserStore";
 import { useAccountsStore } from "../../stores/useAccountsStore";
 import Link from "next/link";
 
 export default function SettingsPage() {
-  const { keyPair, generateAndSetKeyPair, isLoadingKeyPair, setKeyPair, clearKeyPair } =
-    useUserStore();
-  const { 
-    accounts, 
-    activeAccountId, 
-    setActiveAccount, 
+  const {
+    keyPair,
+    generateAndSetKeyPair,
+    isLoadingKeyPair,
+    setKeyPair,
+    clearKeyPair,
+  } = useUserStore();
+  const {
+    accounts,
+    activeAccountId,
+    setActiveAccount,
     generateAccount,
     renameAccount,
-    removeAccount 
+    removeAccount,
   } = useAccountsStore();
   const { addToast } = useToast();
 
@@ -23,14 +35,15 @@ export default function SettingsPage() {
   const [showClearConfirm, setShowClearConfirm] = React.useState(false);
 
   // Map account data for the AccountManager
-  const accountsForManager = React.useMemo(() => 
-    accounts.map(account => ({
-      id: account.id,
-      name: account.name,
-      npub: account.npub,
-      color: account.color
-    })),
-    [accounts]
+  const accountsForManager = React.useMemo(
+    () =>
+      accounts.map((account) => ({
+        id: account.id,
+        name: account.name,
+        npub: account.npub,
+        color: account.color,
+      })),
+    [accounts],
   );
 
   const handleCopy = (text: string) => {
@@ -53,13 +66,13 @@ export default function SettingsPage() {
 
   const handleSelectAccount = (id: string) => {
     setActiveAccount(id);
-    
+
     // Update the keyPair to match the selected account
-    const account = accounts.find(acc => acc.id === id);
+    const account = accounts.find((acc) => acc.id === id);
     if (account) {
       setKeyPair({
         npub: account.npub,
-        nsec: account.nsec
+        nsec: account.nsec,
       });
       addToast(`Switched to account: ${account.name}`, "success");
     }
@@ -74,9 +87,7 @@ export default function SettingsPage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold uppercase tracking-wider">
-          Settings
-        </h2>
+        <h2 className="text-xl font-bold uppercase tracking-wider">Settings</h2>
         <Link href="/" className="text-sm text-pixel-accent hover:underline">
           &lt;- Back to Home
         </Link>
@@ -122,9 +133,9 @@ export default function SettingsPage() {
           </div>
         )}
       </Card>
-      
+
       {/* Account Manager */}
-      <AccountManager 
+      <AccountManager
         accounts={accountsForManager}
         activeAccountId={activeAccountId}
         onSelectAccount={handleSelectAccount}

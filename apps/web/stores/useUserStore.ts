@@ -45,7 +45,7 @@ type UserPersist = (
   config: StateCreator<UserState>,
   options: Omit<PersistOptions<UserState, PersistedUserState>, "storage"> & {
     storage: PersistStorage<PersistedUserState> | undefined;
-  }
+  },
 ) => StateCreator<UserState>;
 
 export const useUserStore = create<UserState>(
@@ -103,6 +103,6 @@ export const useUserStore = create<UserState>(
       name: "ringable-user-storage",
       storage: createJSONStorage(() => localStorage),
       partialize: (state): PersistedUserState => ({ keyPair: state.keyPair }),
-    }
-  )
+    },
+  ),
 );
