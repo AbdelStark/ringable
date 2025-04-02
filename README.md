@@ -6,9 +6,9 @@
 
 Ringable allows users to create proposals and vote anonymously as part of a predefined group (a "ring" of public keys). It leverages the cryptographic power of **bLSAG ring signatures** to ensure that while votes are verified as coming from a valid member of the ring, the specific voter's identity remains hidden.
 
-Built with a fun, **retro pixel-art aesthetic**, Ringable demonstrates modern cryptography in an engaging, user-friendly way.
+The cryptographic functions are powered by the [Nostringer Rust library](https://github.com/AbdelStark/nostringer-rs), compiled to WebAssembly (WASM) for use in the browser.
 
-**Important Note:** This implementation currently uses **mocked cryptography** functions for UI development and demonstration purposes. The core ring signature logic needs to be integrated by compiling the underlying Rust library ([Nostringer](https://github.com/AbdelStark/nostringer)) to WebAssembly.
+Built with a fun, **retro pixel-art aesthetic**, Ringable demonstrates modern cryptography in an engaging, user-friendly way.
 
 ## ✨ Key Features
 
@@ -27,7 +27,7 @@ Built with a fun, **retro pixel-art aesthetic**, Ringable demonstrates modern cr
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/)
 - **State Management:** [Zustand](https://zustand-demo.pmnd.rs/) (with `persist` middleware for `localStorage`)
 - **UI Components:** [React](https://reactjs.org/) (within shared `packages/ui`)
-- **Cryptography:** [Nostringer](https://github.com/AbdelStark/nostringer) (Rust library, intended for WASM compilation - _currently mocked_)
+- **Cryptography:** [Nostringer](https://github.com/AbdelStark/nostringer-rs) (Rust library supporting WASM)
 - **Package Manager:** [pnpm](https://pnpm.io/)
 - **Linting/Formatting:** ESLint, Prettier
 
@@ -77,23 +77,20 @@ This project uses a Turborepo monorepo structure:
     ```
 2.  Open your browser to [`http://localhost:3000`](http://localhost:3000) to see the Ringable web application.
 
-## 🚧 Current Status & Next Steps
-
-- **Core UI Complete:** Pages for managing keys, rings, creating proposals, listing proposals, voting, and viewing results are implemented.
-- **Retro Styling:** Basic pixel-art theme applied using Tailwind CSS and a pixel font.
-- **State Management:** Zustand stores with `localStorage` persistence are functional.
-- **Deployment Prep:** Basic SEO, sitemap, robots.txt, and Vercel configuration added.
-- **Cryptography Mocked:** All ring signature operations (`generateKeyPair`, `signBlsag`, `verifyBlsag`, `keyImagesMatch`) are currently using mock functions in `packages/crypto`.
-
-**Next major step:**
-
-1.  **Integrate Real Cryptography:**
-    - Compile the [Nostringer](https://github.com/AbdelStark/nostringer) Rust library to WebAssembly (`wasm-pack build --target web --features wasm`).
-    - Place the generated `nostringer.js`, `nostringer_bg.wasm`, and `nostringer.d.ts` files into `apps/web/public/`.
-    - Copy `nostringer.d.ts` to `packages/crypto/src/types/`.
-    - Set `MOCK_CRYPTO = false` in `packages/crypto/src/nostringer.ts`.
-    - Thoroughly test the key generation, signing, verification, and duplicate vote detection logic.
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+Built with love by [AbdelStark](https://github.com/AbdelStark) 🧡
+
+Feel free to follow me on Nostr if you'd like, using my public key:
+
+```text
+npub1hr6v96g0phtxwys4x0tm3khawuuykz6s28uzwtj5j0zc7lunu99snw2e29
+```
+
+Or just **scan this QR code** to find me:
+
+![Nostr Public Key QR Code](https://hackmd.io/_uploads/SkAvwlYYC.png)
