@@ -1,13 +1,13 @@
-// Define a serializable version of KeyPair
+// Define a serializable version of KeyPair used in the store
 export interface KeyPair {
-  privateKeyHex: string;
-  publicKeyHex: string;
+  nsec: string; // Nostr secret key format (for display/backup)
+  npub: string; // Nostr public key format (for display/identification)
 }
 
 export interface Ring {
   id: string; // Unique ID for the ring (e.g., UUID)
   name: string;
-  memberPublicKeys: string[]; // Array of hex-encoded public keys
+  memberPublicKeys: string[]; // Array of Nostr npub identifiers
 }
 
 export interface ProposalOption {

@@ -37,8 +37,8 @@ export default function SettingsPage() {
       // Or ideally, use a crypto function `derivePublicKey(privateKey)`
       const mockPublicKey = "mock-pubkey-" + privateKeyInput.substring(0, 8);
       setKeyPair({
-        publicKeyHex: mockPublicKey,
-        privateKeyHex: privateKeyInput,
+        npub: mockPublicKey,
+        nsec: privateKeyInput,
       });
       setShowPrivateKeyInput(false);
       setPrivateKeyInput("");
@@ -63,13 +63,13 @@ export default function SettingsPage() {
               <div className="flex items-center gap-2">
                 <Input
                   readOnly
-                  value={keyPair.publicKeyHex}
+                  value={keyPair.npub}
                   className="bg-gray-100 text-xs flex-grow"
                 />
                 <Button
                   variant="secondary"
                   onClick={() => {
-                    handleCopy(keyPair.publicKeyHex);
+                    handleCopy(keyPair.npub);
                   }}
                   className="text-xs"
                 >

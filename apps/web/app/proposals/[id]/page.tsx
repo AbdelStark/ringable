@@ -75,7 +75,7 @@ export default function ProposalDetailsPage() {
       return;
     }
 
-    if (!ring.memberPublicKeys.includes(keyPair.publicKeyHex)) {
+    if (!ring.memberPublicKeys.includes(keyPair.npub)) {
       setEligibility({
         eligible: false,
         reason: "Your key is not in the voting ring for this proposal.",
@@ -135,7 +135,7 @@ export default function ProposalDetailsPage() {
     if (!proposal || !keyPair || !eligibility.eligible || isVoting) return;
     setIsVoting(true);
 
-    // Construct message to sign (CONSISTENCY IS KEY!)
+    // Construct message to sign
     const message = new TextEncoder().encode(proposal.id + optionId);
 
     try {

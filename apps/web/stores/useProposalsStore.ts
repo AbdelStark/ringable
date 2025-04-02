@@ -16,12 +16,12 @@ interface ProposalsState {
   createProposal: (
     title: string,
     options: string[],
-    ringId: string,
+    ringId: string
   ) => Proposal;
   addVote: (
     proposalId: string,
     optionId: string,
-    messageToSign: Uint8Array,
+    messageToSign: Uint8Array
   ) => Promise<{ success: boolean; reason?: string }>;
   getProposalById: (id: string) => Proposal | undefined;
   getVotesForProposal: (proposalId: string) => VoteRecord[];
@@ -31,7 +31,7 @@ interface ProposalsState {
 
 type ProposalsPersist = (
   config: StateCreator<ProposalsState>,
-  options: PersistOptions<ProposalsState>,
+  options: PersistOptions<ProposalsState>
 ) => StateCreator<ProposalsState>;
 
 export const useProposalsStore = create<ProposalsState>(
@@ -42,7 +42,7 @@ export const useProposalsStore = create<ProposalsState>(
       createProposal: (
         title: string,
         optionTexts: string[],
-        ringId: string,
+        ringId: string
       ) => {
         const options: ProposalOption[] = optionTexts.map((text: string) => ({
           id: uuidv4(),
@@ -65,8 +65,9 @@ export const useProposalsStore = create<ProposalsState>(
       addVote: async (
         proposalId: string,
         optionId: string,
-        messageToSign: Uint8Array,
+        messageToSign: Uint8Array
       ) => {
+        console.log("addVote", proposalId, optionId, messageToSign);
         const proposal = get().getProposalById(proposalId);
         const ring = useRingStore
           .getState()
@@ -79,33 +80,36 @@ export const useProposalsStore = create<ProposalsState>(
         if (!ring) {
           return { success: false, reason: "Voting ring not found." };
         }
-        if (!userKeyPair || !userKeyPair.privateKeyHex) {
+        if (!userKeyPair || !userKeyPair.nsec) {
           return { success: false, reason: "User private key not available." };
         }
-        if (!ring.memberPublicKeys.includes(userKeyPair.publicKeyHex)) {
+        if (!ring.memberPublicKeys.includes(userKeyPair.npub)) {
           return { success: false, reason: "User not in the voting ring." };
         }
 
         try {
+          console.log("signing message", messageToSign);
+          console.log("userKeyPair.nsec", userKeyPair.nsec);
+          console.log("ring.memberPublicKeys", ring.memberPublicKeys);
           const compact_signature_str = wasm_sign_compact_blsag(
             messageToSign,
-            userKeyPair.privateKeyHex,
-            ring.memberPublicKeys,
+            userKeyPair.nsec,
+            ring.memberPublicKeys
           );
 
           const signature = wasm_deserialize_compact_blsag(
-            compact_signature_str,
+            compact_signature_str
           );
 
           const existingVotes = get().getVotesForProposal(proposalId);
           for (const existingVote of existingVotes) {
             const existingVoteCompactSignature = existingVote.signature;
             const existingVoteSignature = wasm_deserialize_compact_blsag(
-              existingVoteCompactSignature,
+              existingVoteCompactSignature
             );
             const match = wasm_key_images_match(
               signature.key_image,
-              existingVoteSignature.key_image,
+              existingVoteSignature.key_image
             );
             if (match) {
               return { success: false, reason: "Duplicate vote detected." };
@@ -120,7 +124,7 @@ export const useProposalsStore = create<ProposalsState>(
 
           set((state: ProposalsState) => ({
             proposals: state.proposals.map((p: Proposal) =>
-              p.id === proposalId ? { ...p, votes: [...p.votes, newVote] } : p,
+              p.id === proposalId ? { ...p, votes: [...p.votes, newVote] } : p
             ),
           }));
           return { success: true };
@@ -150,7 +154,7 @@ export const useProposalsStore = create<ProposalsState>(
 
         const results: Record<string, number> = {};
         proposal.options.forEach(
-          (opt: ProposalOption) => (results[opt.id] = 0),
+          (opt: ProposalOption) => (results[opt.id] = 0)
         );
 
         const getMessageBytes = (pId: string, oId: string): Uint8Array => {
@@ -163,13 +167,13 @@ export const useProposalsStore = create<ProposalsState>(
             const isValid = wasm_verify_compact(
               vote.signature,
               message,
-              ring.memberPublicKeys,
+              ring.memberPublicKeys
             );
             if (isValid) {
               results[vote.optionId] = (results[vote.optionId] ?? 0) + 1;
             } else {
               console.warn(
-                `Invalid signature found for vote on option ${vote.optionId}`,
+                `Invalid signature found for vote on option ${vote.optionId}`
               );
             }
           } catch (error) {
@@ -182,7 +186,7 @@ export const useProposalsStore = create<ProposalsState>(
       closeProposal: (id: string) => {
         set((state: ProposalsState) => ({
           proposals: state.proposals.map((p: Proposal) =>
-            p.id === id ? { ...p, status: "closed" } : p,
+            p.id === id ? { ...p, status: "closed" } : p
           ),
         }));
       },
@@ -190,6 +194,6 @@ export const useProposalsStore = create<ProposalsState>(
     {
       name: "ringable-proposals-storage",
       storage: createJSONStorage(() => localStorage),
-    },
-  ),
+    }
+  )
 );
