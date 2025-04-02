@@ -33,7 +33,7 @@ type AccountsPersist = (
   options: PersistOptions<
     AccountsState,
     Pick<AccountsState, "accounts" | "activeAccountId">
-  >,
+  >
 ) => StateCreator<AccountsState>;
 
 export const useAccountsStore = create<AccountsState>(
@@ -78,7 +78,7 @@ export const useAccountsStore = create<AccountsState>(
           return get().addAccount(
             name || `Account ${get().accounts.length + 1}`,
             npub,
-            nsec,
+            nsec
           );
         } catch (error) {
           console.error("Failed to generate account:", error);
@@ -98,12 +98,13 @@ export const useAccountsStore = create<AccountsState>(
         // If removing the active account, select another one
         let newActiveId = activeAccountId;
         if (id === activeAccountId) {
-          const otherAccount = accounts.find((a) => a.id !== id);
+          // Find the first account that isn't being removed
+          const otherAccount = accounts.find((a) => a && a.id && a.id !== id);
           newActiveId = otherAccount?.id || null;
         }
 
         set({
-          accounts: accounts.filter((account) => account.id !== id),
+          accounts: accounts.filter((account) => account && account.id !== id),
           activeAccountId: newActiveId,
         });
       },
@@ -113,7 +114,7 @@ export const useAccountsStore = create<AccountsState>(
 
         set((state) => ({
           accounts: state.accounts.map((account) =>
-            account.id === id ? { ...account, name: newName.trim() } : account,
+            account.id === id ? { ...account, name: newName.trim() } : account
           ),
         }));
       },
@@ -127,6 +128,7 @@ export const useAccountsStore = create<AccountsState>(
 
       getActiveAccount: () => {
         const { accounts, activeAccountId } = get();
+        if (!activeAccountId) return null;
         return (
           accounts.find((account) => account.id === activeAccountId) || null
         );
@@ -135,7 +137,7 @@ export const useAccountsStore = create<AccountsState>(
       updateAccountColor: (id: string, color: string) => {
         set((state) => ({
           accounts: state.accounts.map((account) =>
-            account.id === id ? { ...account, color } : account,
+            account.id === id ? { ...account, color } : account
           ),
         }));
       },
@@ -147,8 +149,8 @@ export const useAccountsStore = create<AccountsState>(
         accounts: state.accounts,
         activeAccountId: state.activeAccountId,
       }),
-    },
-  ),
+    }
+  )
 );
 
 // Helper function to generate a random color

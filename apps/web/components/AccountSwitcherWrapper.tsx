@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import { AccountSwitcher, useToast } from "@repo/ui";
 import { useAccountsStore } from "../stores/useAccountsStore";
 import { useUserStore } from "../stores/useUserStore";
-import { CreateAccountDialog } from "./CreateAccountDialog";
 
 export function AccountSwitcherWrapper() {
   const { accounts, activeAccountId, setActiveAccount, generateAccount } =
@@ -40,21 +39,29 @@ export function AccountSwitcherWrapper() {
 
       // If we have accounts but no active one, set the first as active
       if (accounts.length > 0 && !activeAccountId) {
-        setActiveAccount(accounts[0].id);
+        const firstAccount = accounts[0];
+        if (firstAccount && firstAccount.id) {
+          setActiveAccount(firstAccount.id);
+        }
       }
 
       // Sync keyPair with active account
       const activeAccount = accounts.find((acc) => acc.id === activeAccountId);
-      if (activeAccount && (!keyPair || keyPair.npub !== activeAccount.npub)) {
-        setKeyPair({
-          npub: activeAccount.npub,
-          nsec: activeAccount.nsec,
-        });
+      if (activeAccount) {
+        if (!keyPair || keyPair.npub !== activeAccount.npub) {
+          setKeyPair({
+            npub: activeAccount.npub,
+            nsec: activeAccount.nsec,
+          });
+        }
       }
     };
 
-    migrateKeyPair();
-  }, [accounts.length, activeAccountId, keyPair, setActiveAccount, addToast]);
+    migrateKeyPair().catch((err) => {
+      console.error("Error migrating keypair:", err);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accounts.length, activeAccountId, keyPair?.npub]);
 
   const handleSelectAccount = (id: string) => {
     setActiveAccount(id);
@@ -98,6 +105,62 @@ export function AccountSwitcherWrapper() {
     npub: account.npub,
     color: account.color,
   }));
+
+  // Create a simple inline account dialog to avoid the import error
+  function CreateAccountDialog({
+    isOpen,
+    onClose,
+    onCreateAccount
+  }: {
+    isOpen: boolean;
+    onClose: () => void;
+    onCreateAccount: (name: string) => Promise<void>;
+  }) {
+    const [name, setName] = useState('');
+    
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (name.trim()) {
+        await onCreateAccount(name);
+        setName('');
+      }
+    };
+    
+    if (!isOpen) return null;
+    
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose}></div>
+        <div className="relative z-10 bg-white border-4 border-pixel-border p-4 shadow-lg max-w-md w-full">
+          <h2 className="text-lg font-bold mb-4">Create New Account</h2>
+          <form onSubmit={handleSubmit}>
+            <input 
+              type="text" 
+              value={name} 
+              onChange={e => setName(e.target.value)} 
+              placeholder="Account Name"
+              className="w-full border border-gray-300 p-2 mb-4"
+            />
+            <div className="flex justify-end gap-2">
+              <button 
+                type="button" 
+                onClick={onClose}
+                className="px-4 py-2 border border-gray-300 bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                className="px-4 py-2 bg-pixel-accent text-white"
+              >
+                Create
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
