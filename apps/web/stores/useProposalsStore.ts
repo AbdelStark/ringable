@@ -23,7 +23,7 @@ interface ProposalsState {
     proposalId: string,
     optionId: string,
     messageToSign: Uint8Array,
-  ) => Promise<{ success: boolean; reason?: string }>;
+  ) => Promise<{ success: boolean; reason?: string; keyImage?: string }>;
   getProposalById: (id: string) => Proposal | undefined;
   getVotesForProposal: (proposalId: string) => VoteRecord[];
   getResults: (proposalId: string) => Promise<Record<string, number>>;
@@ -118,7 +118,11 @@ export const useProposalsStore = create<ProposalsState>(
                 signature.key_image,
               );
               console.log("duplicate vote detected");
-              return { success: false, reason: "Duplicate vote detected." };
+              return {
+                success: false,
+                reason: "Duplicate vote detected.",
+                keyImage: signature.key_image,
+              };
             }
           }
 

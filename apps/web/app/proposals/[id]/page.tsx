@@ -1,7 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { Button, Card, useToast, ConfirmDialog } from "@repo/ui";
+import {
+  Button,
+  Card,
+  useToast,
+  ConfirmDialog,
+  DuplicateVoteDialog,
+} from "@repo/ui";
 import { useProposalsStore } from "../../../stores/useProposalsStore";
 import { useRingStore } from "../../../stores/useRingStore";
 import { useUserStore } from "../../../stores/useUserStore";
@@ -61,6 +67,9 @@ export default function ProposalDetailsPage() {
   const [isVoting, setIsVoting] = React.useState(false);
   const [isLoadingResults, setIsLoadingResults] = React.useState(false);
   const [showCloseConfirm, setShowCloseConfirm] = React.useState(false);
+  const [showDuplicateVoteDialog, setShowDuplicateVoteDialog] =
+    React.useState(false);
+  const [duplicateVoteKeyImage, setDuplicateVoteKeyImage] = React.useState("");
 
   // Effect to check eligibility and find user's vote
   React.useEffect(() => {
@@ -139,17 +148,24 @@ export default function ProposalDetailsPage() {
             setIsLoadingResults(false);
           });
       } else {
-        // Explicitly handle duplicate vote case
-        if (result.reason === "Duplicate vote detected.") {
+        // Check if it's a duplicate vote with key image
+        if (result.reason === "Duplicate vote detected." && result.keyImage) {
+          // Show the specialized duplicate vote dialog with key image
+          setDuplicateVoteKeyImage(result.keyImage);
+          setShowDuplicateVoteDialog(true);
+
+          // Also update eligibility state
           setEligibility({
             eligible: false,
             reason: "You have already voted on this proposal.",
           });
+        } else {
+          // Handle other vote failures with a regular toast
+          addToast(
+            `Failed to cast vote: ${result.reason ?? "Unknown error"}`,
+            "error",
+          );
         }
-        addToast(
-          `Failed to cast vote: ${result.reason ?? "Unknown error"}`,
-          "error",
-        );
       }
     } catch (error) {
       console.error("Error casting vote:", error);
@@ -294,6 +310,13 @@ export default function ProposalDetailsPage() {
         message="Are you sure you want to close voting for this proposal? This action cannot be undone."
         onConfirm={confirmCloseProposal}
         onCancel={() => setShowCloseConfirm(false)}
+      />
+
+      {/* Duplicate Vote Dialog */}
+      <DuplicateVoteDialog
+        isOpen={showDuplicateVoteDialog}
+        keyImage={duplicateVoteKeyImage}
+        onClose={() => setShowDuplicateVoteDialog(false)}
       />
     </div>
   );
