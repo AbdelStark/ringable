@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { Press_Start_2P } from "next/font/google"; // Import pixel font
 import NextLink from "next/link"; // Import with different name
 import type { LinkProps } from "next/link"; // Import props type
+import { ToastProvider } from "@repo/ui"; // Import ToastProvider
 
 // const inter = Inter({ subsets: ["latin"] });
 const pressStart2P = Press_Start_2P({
@@ -79,45 +80,47 @@ export default function RootLayout({
       <body
         className={`${pressStart2P.className} bg-pixel-bg text-pixel-text text-sm`}
       >
-        {" "}
-        {/* Default text size */}
-        <div className="container mx-auto p-3 md:p-4 border-4 border-pixel-border bg-pixel-container-bg shadow-pixel-lg max-w-3xl mt-4 mb-4">
+        <ToastProvider>
           {" "}
-          {/* Thicker border, slightly less padding */}
-          <header className="mb-4 pb-2 border-b-4 border-pixel-border flex justify-between items-center">
-            <Link
-              href="/"
-              className="text-xl md:text-2xl font-normal hover:text-pixel-accent transition-colors"
-            >
-              RINGABLE
-            </Link>
-            <nav className="flex gap-3 md:gap-4 items-center">
+          {/* Default text size */}
+          <div className="container mx-auto p-3 md:p-4 border-4 border-pixel-border bg-pixel-container-bg shadow-pixel-lg max-w-3xl mt-4 mb-4">
+            {" "}
+            {/* Thicker border, slightly less padding */}
+            <header className="mb-4 pb-2 border-b-4 border-pixel-border flex justify-between items-center">
               <Link
-                href="/rings"
-                className="text-xs md:text-sm hover:text-pixel-accent hover:underline"
+                href="/"
+                className="text-xl md:text-2xl font-normal hover:text-pixel-accent transition-colors"
               >
-                Rings
+                RINGABLE
               </Link>
-              <Link
-                href="/proposals/new"
-                className="text-xs md:text-sm hover:text-pixel-accent hover:underline"
-              >
-                New Proposal
-              </Link>
-              <Link
-                href="/settings"
-                className="text-xs md:text-sm hover:text-pixel-accent hover:underline"
-              >
-                Settings
-              </Link>
-            </nav>
-          </header>
-          <main className="min-h-[60vh] py-2">{children}</main>{" "}
-          {/* Added padding */}
-          <footer className="mt-4 pt-2 border-t-4 border-pixel-border text-center text-xs">
-            <p>&copy; {new Date().getFullYear()} Ringable</p>
-          </footer>
-        </div>
+              <nav className="flex gap-3 md:gap-4 items-center">
+                <Link
+                  href="/rings"
+                  className="text-xs md:text-sm hover:text-pixel-accent hover:underline"
+                >
+                  Rings
+                </Link>
+                <Link
+                  href="/proposals/new"
+                  className="text-xs md:text-sm hover:text-pixel-accent hover:underline"
+                >
+                  New Proposal
+                </Link>
+                <Link
+                  href="/settings"
+                  className="text-xs md:text-sm hover:text-pixel-accent hover:underline"
+                >
+                  Settings
+                </Link>
+              </nav>
+            </header>
+            <main className="min-h-[60vh] py-2">{children}</main>{" "}
+            {/* Added padding */}
+            <footer className="mt-4 pt-2 border-t-4 border-pixel-border text-center text-xs">
+              <p>&copy; {new Date().getFullYear()} Ringable</p>
+            </footer>
+          </div>
+        </ToastProvider>
       </body>
     </html>
   );

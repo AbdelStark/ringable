@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Button, Card, Input } from "@repo/ui";
+import { Button, Card, Input, useToast, ConfirmDialog } from "@repo/ui";
 import { useRingStore } from "../../stores/useRingStore";
 import { useUserStore } from "../../stores/useUserStore"; // To optionally add own key
 import Link from "next/link";
@@ -10,19 +10,23 @@ import { type Ring } from "../../stores/types";
 export default function RingsPage() {
   const { rings, addRing, updateRing, removeRing } = useRingStore();
   const { keyPair } = useUserStore(); // Get user's own keypair
+  const { addToast } = useToast(); // Use the toast hook
 
   const [newRingName, setNewRingName] = React.useState("");
   const [editingRingId, setEditingRingId] = React.useState<string | null>(null);
   const [editRingName, setEditRingName] = React.useState("");
   const [editMembers, setEditMembers] = React.useState<string[]>([]);
   const [newMemberKey, setNewMemberKey] = React.useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
+  const [ringToDelete, setRingToDelete] = React.useState<Ring | null>(null);
 
   const handleCreateRing = () => {
     if (newRingName.trim()) {
       addRing(newRingName.trim(), []);
       setNewRingName("");
+      addToast(`Ring "${newRingName.trim()}" created successfully!`, "success");
     } else {
-      alert("Please enter a name for the new ring.");
+      addToast("Please enter a name for the new ring.", "error");
     }
   };
 
@@ -43,13 +47,14 @@ export default function RingsPage() {
   const saveChanges = () => {
     if (!editingRingId) return;
     if (editRingName.trim() === "") {
-      alert("Ring name cannot be empty.");
+      addToast("Ring name cannot be empty.", "error");
       return;
     }
     updateRing(editingRingId, {
       name: editRingName.trim(),
       memberPublicKeys: editMembers,
     });
+    addToast(`Ring "${editRingName.trim()}" updated successfully!`, "success");
     cancelEditing();
   };
 
@@ -60,17 +65,19 @@ export default function RingsPage() {
         (keyToAdd.trim().length !== 64 ||
           !/^[0-9a-fA-F]+$/.test(keyToAdd.trim())))
     ) {
-      alert(
+      addToast(
         "Invalid public key format. Must be either an npub1 string or 64 hexadecimal characters.",
+        "error",
       );
       return;
     }
     if (editMembers.includes(keyToAdd.trim())) {
-      alert("Public key already in the ring.");
+      addToast("Public key already in the ring.", "warning");
       return;
     }
     setEditMembers([...editMembers, keyToAdd.trim()]);
     setNewMemberKey(""); // Clear input after adding
+    addToast("Member added to ring successfully.", "success");
   };
 
   const handleRemoveMember = (keyToRemove: string) => {
@@ -78,11 +85,22 @@ export default function RingsPage() {
   };
 
   const handleDeleteRing = (id: string) => {
-    if (window.confirm("Are you sure you want to delete this ring?")) {
-      removeRing(id);
-      if (editingRingId === id) {
+    const ringToDelete = rings.find((ring) => ring.id === id);
+    if (ringToDelete) {
+      setRingToDelete(ringToDelete);
+      setShowDeleteConfirm(true);
+    }
+  };
+
+  const confirmDeleteRing = () => {
+    if (ringToDelete) {
+      removeRing(ringToDelete.id);
+      if (editingRingId === ringToDelete.id) {
         cancelEditing();
       }
+      addToast(`Ring "${ringToDelete.name}" deleted successfully!`, "info");
+      setShowDeleteConfirm(false);
+      setRingToDelete(null);
     }
   };
 
@@ -241,6 +259,14 @@ export default function RingsPage() {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        title="Delete Ring"
+        message={`Are you sure you want to delete the ring "${ringToDelete?.name}"? This action cannot be undone.`}
+        onConfirm={confirmDeleteRing}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </div>
   );
 }
