@@ -1,16 +1,24 @@
 "use client";
 
 import * as React from "react";
-import { Button, Card, Input, useToast, ConfirmDialog } from "@repo/ui";
+import { Button, Card, Input, useToast, ConfirmDialog, AccountSelectorDialog } from "@repo/ui";
 import { useRingStore } from "../../stores/useRingStore";
 import { useUserStore } from "../../stores/useUserStore"; // To optionally add own key
+import { useAccountsStore } from "../../stores/useAccountsStore"; // Import accounts store
 import Link from "next/link";
 import { type Ring } from "../../stores/types";
 import { NDKPrivateKeySigner } from "@nostr-dev-kit/ndk"; // Import NDK
 
+// Add the truncateKey helper function
+const truncateKey = (key: string): string => {
+  if (!key || key.length < 15) return key;
+  return `${key.substring(0, 8)}...${key.substring(key.length - 6)}`;
+};
+
 export default function RingsPage() {
   const { rings, addRing, updateRing, removeRing } = useRingStore();
   const { keyPair } = useUserStore(); // Get user's own keypair
+  const { accounts } = useAccountsStore(); // Get accounts from the store
   const { addToast } = useToast(); // Use the toast hook
 
   const [newRingName, setNewRingName] = React.useState("");
@@ -28,6 +36,9 @@ export default function RingsPage() {
     string | null
   >(null);
   const [generatedKeyCopied, setGeneratedKeyCopied] = React.useState(false);
+
+  // Add state for the account selector
+  const [showAccountSelector, setShowAccountSelector] = React.useState(false);
 
   const handleCopy = (text: string, type: "npub" | "nsec" = "npub") => {
     navigator.clipboard
@@ -172,6 +183,18 @@ export default function RingsPage() {
     }
   };
 
+  // Handle selecting an account from the selector
+  const handleAddFromAccount = (npub: string) => {
+    // Verify not already in ring
+    if (editMembers.includes(npub)) {
+      addToast("This account is already a member of the ring.", "warning");
+      return;
+    }
+    
+    setEditMembers([...editMembers, npub]);
+    addToast("Account added to ring members.", "success");
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -235,10 +258,7 @@ export default function RingsPage() {
                             key={key}
                             className="flex justify-between items-center text-xs break-all"
                           >
-                            <span title={key}>
-                              {key.substring(0, 12)}...
-                              {key.substring(key.length - 6)}
-                            </span>
+                            <span title={key}>{truncateKey(key)}</span>
                             <Button
                               variant="secondary"
                               onClick={() => {
@@ -275,6 +295,16 @@ export default function RingsPage() {
                         className="shrink-0"
                       >
                         Add
+                      </Button>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-dashed border-pixel-border">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => setShowAccountSelector(true)}
+                        className="w-full text-xs justify-center"
+                      >
+                        Add from Your Accounts
                       </Button>
                     </div>
                     <div className="mt-3 pt-3 border-t border-dashed border-pixel-border">
@@ -333,7 +363,7 @@ export default function RingsPage() {
                           onClick={() => handleAddMember(keyPair.npub)}
                           className="text-xs"
                         >
-                          Add My Key ({keyPair.npub.substring(0, 10)}...)
+                          Add My Key ({truncateKey(keyPair.npub)})
                         </Button>
                       </div>
                     )}
@@ -378,6 +408,20 @@ export default function RingsPage() {
           ))}
         </div>
       )}
+
+      {/* Add the AccountSelectorDialog */}
+      <AccountSelectorDialog
+        isOpen={showAccountSelector}
+        accounts={accounts.map(acc => ({
+          id: acc.id,
+          name: acc.name,
+          npub: acc.npub,
+          color: acc.color
+        }))}
+        onClose={() => setShowAccountSelector(false)}
+        onSelect={handleAddFromAccount}
+        excludeNpubs={editMembers} // Exclude accounts already in the ring
+      />
 
       <ConfirmDialog
         isOpen={showDeleteConfirm}

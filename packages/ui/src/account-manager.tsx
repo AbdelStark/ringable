@@ -2,6 +2,7 @@ import * as React from "react";
 import { Button } from "./button";
 import { Input } from "./input";
 import { Card } from "./card";
+import { ConfirmDialog } from "./confirm-dialog";
 import { Account } from "./account-switcher";
 
 interface AccountManagerProps {
@@ -27,6 +28,8 @@ export function AccountManager({
     null,
   );
   const [editAccountName, setEditAccountName] = React.useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
+  const [accountToDelete, setAccountToDelete] = React.useState<Account | null>(null);
 
   const handleCreateAccount = async () => {
     if (!newAccountName.trim()) {
@@ -68,22 +71,33 @@ export function AccountManager({
       alert("Cannot delete the only account. Create another account first.");
       return;
     }
-
-    if (
-      window.confirm(
-        "Are you sure you want to delete this account? This cannot be undone.",
-      )
-    ) {
-      onDeleteAccount(accountId);
-      if (editingAccountId === accountId) {
+    
+    const account = accounts.find(acc => acc.id === accountId);
+    if (account) {
+      setAccountToDelete(account);
+      setShowDeleteConfirm(true);
+    }
+  };
+  
+  const confirmDeleteAccount = () => {
+    if (accountToDelete) {
+      onDeleteAccount(accountToDelete.id);
+      if (editingAccountId === accountToDelete.id) {
         cancelEditing();
       }
+      setShowDeleteConfirm(false);
+      setAccountToDelete(null);
     }
   };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     // Provide visual feedback (toast or alert)
+  };
+
+  const truncateKey = (key: string): string => {
+    if (!key || key.length < 15) return key;
+    return `${key.substring(0, 8)}...${key.substring(key.length - 6)}`;
   };
 
   return (
@@ -157,7 +171,7 @@ export function AccountManager({
 
                     <div className="flex gap-1 mb-3">
                       <div className="font-mono text-xs text-gray-600 flex-grow truncate">
-                        {account.npub}
+                        {truncateKey(account.npub)}
                       </div>
                       <button
                         onClick={() => copyToClipboard(account.npub)}
@@ -201,6 +215,14 @@ export function AccountManager({
           </ul>
         )}
       </Card>
+
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        title="Delete Account"
+        message={`Are you sure you want to delete the account "${accountToDelete?.name}"? This action cannot be undone.`}
+        onConfirm={confirmDeleteAccount}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </div>
   );
 }
