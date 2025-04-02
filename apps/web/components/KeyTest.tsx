@@ -6,6 +6,7 @@ import { useUserStore } from "../stores/useUserStore";
 export default function KeyTest() {
   const { keyPair, generateAndSetKeyPair, isLoadingKeyPair } = useUserStore();
   const [error, setError] = useState<string | null>(null);
+  const [showNsec, setShowNsec] = useState(false);
 
   const handleGenerateKey = async () => {
     try {
@@ -19,7 +20,9 @@ export default function KeyTest() {
 
   return (
     <div className="p-4 border rounded-lg shadow">
-      <h2 className="text-xl font-bold mb-4">Key Pair Testing</h2>
+      <h2 className="text-xl font-bold mb-4">
+        Key Pair Testing (NDK - nsec/npub)
+      </h2>
 
       <div className="mb-4">
         <button
@@ -42,19 +45,25 @@ export default function KeyTest() {
           <h3 className="font-semibold">Generated Key Pair:</h3>
           <div className="bg-gray-100 p-2 rounded overflow-auto">
             <p className="text-sm mb-1">
-              <span className="font-mono">Public Key:</span>
+              <span className="font-mono">Public Key (npub):</span>
             </p>
-            <p className="font-mono text-xs break-all">
-              {keyPair.publicKeyHex}
-            </p>
+            <p className="font-mono text-xs break-all">{keyPair.npub}</p>
           </div>
           <div className="bg-gray-100 p-2 rounded overflow-auto">
-            <p className="text-sm mb-1">
-              <span className="font-mono">Private Key:</span>
-            </p>
-            <p className="font-mono text-xs break-all">
-              {keyPair.privateKeyHex}
-            </p>
+            <div className="flex justify-between items-center mb-1">
+              <p className="text-sm">
+                <span className="font-mono">Secret Key (nsec):</span>
+              </p>
+              <button
+                onClick={() => setShowNsec(!showNsec)}
+                className="text-xs text-blue-600 hover:underline"
+              >
+                {showNsec ? "Hide" : "Show"}
+              </button>
+            </div>
+            {showNsec && (
+              <p className="font-mono text-xs break-all">{keyPair.nsec}</p>
+            )}
           </div>
         </div>
       )}

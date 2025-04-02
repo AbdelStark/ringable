@@ -6,17 +6,17 @@ import {
   PersistStorage,
 } from "zustand/middleware";
 import { type KeyPair } from "./types";
+import { NDKPrivateKeySigner } from "@nostr-dev-kit/ndk";
 
-// Initialize the WASM module
+// Initialize the WASM module (still needed for signing/verifying)
 let initPromise: Promise<any> | null = null;
 
 async function initNostringer() {
   if (!initPromise) {
     initPromise = import("@repo/crypto")
       .then(async (module) => {
-        // Initialize the WASM module first using the default export
         const initializedModule = await module.default();
-        return module; // Return the module with all functions
+        return module;
       })
       .catch((err) => {
         console.error("Failed to initialize Nostringer WASM:", err);
@@ -57,22 +57,26 @@ export const useUserStore = create<UserState>(
         if (get().isLoadingKeyPair || get().keyPair) return;
         set({ isLoadingKeyPair: true });
         try {
-          // First ensure the WASM module is initialized
-          const module = await initNostringer();
+          // Initialize WASM lazily
+          await initNostringer();
 
-          // Now it's safe to call the WASM function
-          const wasmKeyPair = module.wasm_generate_keypair("xonly");
-
-          // Extract the serializable values from the WASM object
-          const keyPair: KeyPair = {
-            privateKeyHex: wasmKeyPair.private_key_hex,
-            publicKeyHex: wasmKeyPair.public_key_hex,
-          };
-
-          // Always call free() if the WASM object has this method to prevent memory leaks
-          if (typeof wasmKeyPair.free === "function") {
-            wasmKeyPair.free();
+          // Generate keys using NDK
+          const signer = NDKPrivateKeySigner.generate();
+          const nsec = signer.nsec;
+          if (!nsec) {
+            throw new Error("NDK failed to generate nsec.");
           }
+
+          const user = await signer.user();
+          const npub = user.npub;
+          if (!npub) {
+            throw new Error("NDK failed to generate npub.");
+          }
+
+          const keyPair: KeyPair = {
+            nsec,
+            npub,
+          };
 
           set({ keyPair, isLoadingKeyPair: false });
         } catch (error) {

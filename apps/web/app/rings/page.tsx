@@ -56,10 +56,13 @@ export default function RingsPage() {
   const handleAddMember = (ringId: string, keyToAdd: string) => {
     if (
       !keyToAdd ||
-      keyToAdd.trim().length !== 64 ||
-      !/^[0-9a-fA-F]+$/.test(keyToAdd.trim())
+      (!keyToAdd.trim().startsWith("npub1") &&
+        (keyToAdd.trim().length !== 64 ||
+          !/^[0-9a-fA-F]+$/.test(keyToAdd.trim())))
     ) {
-      alert("Invalid public key format. Must be 64 hexadecimal characters.");
+      alert(
+        "Invalid public key format. Must be either an npub1 string or 64 hexadecimal characters.",
+      );
       return;
     }
     if (editMembers.includes(keyToAdd.trim())) {
@@ -163,13 +166,13 @@ export default function RingsPage() {
                     )}
                     <div className="flex gap-2 items-end">
                       <Input
-                        label="Add Member Public Key"
-                        placeholder="Enter 64-char hex public key..."
+                        label="Add Member NPUB"
+                        placeholder="Enter Nostr Npub key..."
                         value={newMemberKey}
                         onChange={(e) => {
                           setNewMemberKey(e.target.value);
                         }}
-                        maxLength={64}
+                        maxLength={70}
                         className="flex-grow text-xs"
                       />
                       <Button
@@ -177,21 +180,20 @@ export default function RingsPage() {
                         onClick={() => {
                           handleAddMember(ring.id, newMemberKey);
                         }}
-                        disabled={newMemberKey.length !== 64}
                         className="shrink-0"
                       >
                         Add
                       </Button>
                     </div>
-                    {keyPair && !editMembers.includes(keyPair.publicKeyHex) && (
+                    {keyPair && !editMembers.includes(keyPair.npub) && (
                       <Button
                         variant="secondary"
                         onClick={() => {
-                          handleAddMember(ring.id, keyPair.publicKeyHex);
+                          handleAddMember(ring.id, keyPair.npub);
                         }}
                         className="text-xs mt-2"
                       >
-                        Add My Key ({keyPair.publicKeyHex.substring(0, 6)}...)
+                        Add My Key ({keyPair.npub.substring(0, 6)}...)
                       </Button>
                     )}
                   </div>

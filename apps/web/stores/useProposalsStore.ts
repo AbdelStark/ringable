@@ -7,6 +7,7 @@ import {
   wasm_deserialize_compact_blsag,
   wasm_verify_compact,
 } from "@repo/crypto";
+import initNostringer from "@repo/crypto";
 import { useUserStore } from "./useUserStore";
 import { useRingStore } from "./useRingStore";
 import { type Proposal, type ProposalOption, type VoteRecord } from "./types";
@@ -67,6 +68,7 @@ export const useProposalsStore = create<ProposalsState>(
         optionId: string,
         messageToSign: Uint8Array,
       ) => {
+        console.log("addVote", proposalId, optionId, messageToSign);
         const proposal = get().getProposalById(proposalId);
         const ring = useRingStore
           .getState()
@@ -79,17 +81,19 @@ export const useProposalsStore = create<ProposalsState>(
         if (!ring) {
           return { success: false, reason: "Voting ring not found." };
         }
-        if (!userKeyPair || !userKeyPair.privateKeyHex) {
+        if (!userKeyPair || !userKeyPair.nsec) {
           return { success: false, reason: "User private key not available." };
         }
-        if (!ring.memberPublicKeys.includes(userKeyPair.publicKeyHex)) {
+        if (!ring.memberPublicKeys.includes(userKeyPair.npub)) {
           return { success: false, reason: "User not in the voting ring." };
         }
 
         try {
+          await initNostringer();
+
           const compact_signature_str = wasm_sign_compact_blsag(
             messageToSign,
-            userKeyPair.privateKeyHex,
+            userKeyPair.nsec,
             ring.memberPublicKeys,
           );
 
@@ -147,6 +151,9 @@ export const useProposalsStore = create<ProposalsState>(
           .getState()
           .getRingById(proposal?.ringId ?? "");
         if (!proposal || !ring) return {};
+
+        // Initialize the WASM module before verification
+        await initNostringer();
 
         const results: Record<string, number> = {};
         proposal.options.forEach(
