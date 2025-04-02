@@ -38,11 +38,11 @@ export function Toast({
 
   return (
     <div
-      className={`fixed top-4 right-4 z-50 animate-bounce-in shadow-pixel ${typeStyles[type]} border-4 text-white p-3 max-w-xs flex items-start`}
+      className={`w-full animate-bounce-in shadow-pixel ${typeStyles[type]} border-4 text-white p-3 flex items-start`}
       style={{ imageRendering: "pixelated" }}
     >
       <div className="mr-2 text-xl font-bold">{typeIcon[type]}</div>
-      <div className="flex-1 text-sm uppercase tracking-wider">{message}</div>
+      <div className="flex-1 text-sm uppercase tracking-wider break-words">{message}</div>
       {onClose && (
         <button
           onClick={onClose}

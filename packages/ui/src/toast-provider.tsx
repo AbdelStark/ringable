@@ -36,12 +36,9 @@ export function ToastProvider({
   const addToast = React.useCallback(
     (message: string, type: ToastType = "info", duration = 3000) => {
       const id = Math.random().toString(36).substring(2, 9);
-      setToasts((prevToasts) => [
-        ...prevToasts,
-        { id, message, type, duration },
-      ]);
+      setToasts((prevToasts) => [{ id, message, type, duration }, ...prevToasts]);
     },
-    [],
+    []
   );
 
   const removeToast = React.useCallback((id: string) => {
@@ -51,9 +48,9 @@ export function ToastProvider({
   return (
     <ToastContext.Provider value={{ addToast, removeToast }}>
       {children}
-      <div className="fixed top-0 right-0 z-50 p-4 space-y-4 pointer-events-none">
+      <div className="fixed top-4 right-4 z-50 w-full max-w-xs space-y-3">
         {toasts.map((toast) => (
-          <div key={toast.id} className="pointer-events-auto">
+          <div key={toast.id} className="w-full">
             <Toast
               message={toast.message}
               type={toast.type}
