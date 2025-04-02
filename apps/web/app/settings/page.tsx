@@ -1,26 +1,37 @@
 "use client";
 
 import * as React from "react";
-import { Button, Card, Input, useToast, ConfirmDialog } from "@repo/ui";
+import { Button, Card, Input, useToast, ConfirmDialog, AccountManager } from "@repo/ui";
 import { useUserStore } from "../../stores/useUserStore";
-import Link from "next/link"; // For navigation
-import { NDKPrivateKeySigner } from "@nostr-dev-kit/ndk"; // Import NDK signer
+import { useAccountsStore } from "../../stores/useAccountsStore";
+import Link from "next/link";
 
 export default function SettingsPage() {
-  const {
-    keyPair,
-    generateAndSetKeyPair,
-    isLoadingKeyPair,
-    setKeyPair,
-    clearKeyPair,
-  } = useUserStore();
+  const { keyPair, generateAndSetKeyPair, isLoadingKeyPair, setKeyPair, clearKeyPair } =
+    useUserStore();
+  const { 
+    accounts, 
+    activeAccountId, 
+    setActiveAccount, 
+    generateAccount,
+    renameAccount,
+    removeAccount 
+  } = useAccountsStore();
   const { addToast } = useToast();
 
   const [copied, setCopied] = React.useState(false);
-  const [showPrivateKeyInput, setShowPrivateKeyInput] = React.useState(false);
-  const [privateKeyInput, setPrivateKeyInput] = React.useState("");
   const [showClearConfirm, setShowClearConfirm] = React.useState(false);
-  const [isLoadingKey, setIsLoadingKey] = React.useState(false);
+
+  // Map account data for the AccountManager
+  const accountsForManager = React.useMemo(() => 
+    accounts.map(account => ({
+      id: account.id,
+      name: account.name,
+      npub: account.npub,
+      color: account.color
+    })),
+    [accounts]
+  );
 
   const handleCopy = (text: string) => {
     navigator.clipboard
@@ -28,7 +39,7 @@ export default function SettingsPage() {
       .then(() => {
         setCopied(true);
         addToast("Public key copied to clipboard!", "success", 1500);
-        setTimeout(() => setCopied(false), 1500); // Reset after 1.5 seconds
+        setTimeout(() => setCopied(false), 1500);
       })
       .catch((err) => {
         console.error("Failed to copy text: ", err);
@@ -36,45 +47,21 @@ export default function SettingsPage() {
       });
   };
 
-  const handleLoadPrivateKey = async () => {
-    if (!privateKeyInput.startsWith("nsec1")) {
-      addToast("Invalid format. Private key must start with 'nsec1'.", "error");
-      return;
-    }
-    setIsLoadingKey(true);
-    try {
-      // 1. Create signer instance from the nsec input
-      const signer = new NDKPrivateKeySigner(privateKeyInput);
+  const handleCreateAccount = async (name: string): Promise<void> => {
+    await generateAccount(name);
+  };
 
-      // 2. Get the user object to derive npub
-      const user = await signer.user();
-      const derivedNpub = user.npub;
-
-      if (!derivedNpub) {
-        throw new Error(
-          "Failed to derive public key (npub) from the provided private key.",
-        );
-      }
-
-      // 3. Set the derived keypair in the store
+  const handleSelectAccount = (id: string) => {
+    setActiveAccount(id);
+    
+    // Update the keyPair to match the selected account
+    const account = accounts.find(acc => acc.id === id);
+    if (account) {
       setKeyPair({
-        npub: derivedNpub,
-        nsec: privateKeyInput,
+        npub: account.npub,
+        nsec: account.nsec
       });
-
-      setShowPrivateKeyInput(false);
-      setPrivateKeyInput("");
-      addToast("Private key loaded successfully.", "success");
-    } catch (error: any) {
-      console.error("Error loading private key:", error);
-      addToast(
-        `Error loading key: ${
-          error.message || "Invalid nsec format or derivation failed."
-        }`,
-        "error",
-      );
-    } finally {
-      setIsLoadingKey(false);
+      addToast(`Switched to account: ${account.name}`, "success");
     }
   };
 
@@ -86,11 +73,17 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <h2 className="text-xl font-bold mb-4 uppercase tracking-wider">
-        Settings
-      </h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold uppercase tracking-wider">
+          Settings
+        </h2>
+        <Link href="/" className="text-sm text-pixel-accent hover:underline">
+          &lt;- Back to Home
+        </Link>
+      </div>
 
-      <Card title="Your Identity Keypair" className="mb-6">
+      {/* Active Account Card */}
+      <Card title="Your Active Account" className="mb-6">
         {isLoadingKeyPair ? (
           <p>Loading...</p>
         ) : keyPair ? (
@@ -128,71 +121,19 @@ export default function SettingsPage() {
             </Button>
           </div>
         )}
-
-        {keyPair && (
-          <div className="mt-4 pt-4 border-t-3 border-pixel-border">
-            {!showPrivateKeyInput ? (
-              <div className="flex gap-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    setShowPrivateKeyInput(true);
-                  }}
-                >
-                  Load Existing NSEC Key
-                </Button>
-                <Button
-                  variant="secondary"
-                  className="text-pixel-warning hover:bg-red-200"
-                  onClick={() => setShowClearConfirm(true)}
-                >
-                  Clear Current Keypair
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <label className="block text-xs font-normal text-pixel-text mb-1 uppercase tracking-wider">
-                  Enter NSEC Private Key
-                </label>
-                <Input
-                  type="password"
-                  value={privateKeyInput}
-                  onChange={(e) => {
-                    setPrivateKeyInput(e.target.value);
-                  }}
-                  placeholder="Enter your nsec1... private key"
-                />
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => {
-                      void handleLoadPrivateKey();
-                    }}
-                    disabled={
-                      !privateKeyInput.startsWith("nsec1") || isLoadingKey
-                    }
-                  >
-                    {isLoadingKey ? "Loading..." : "Load Key"}
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      setShowPrivateKeyInput(false);
-                      setPrivateKeyInput("");
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
       </Card>
+      
+      {/* Account Manager */}
+      <AccountManager 
+        accounts={accountsForManager}
+        activeAccountId={activeAccountId}
+        onSelectAccount={handleSelectAccount}
+        onCreateAccount={handleCreateAccount}
+        onRenameAccount={renameAccount}
+        onDeleteAccount={removeAccount}
+      />
 
-      <Link href="/" className="text-sm text-pixel-accent hover:underline">
-        &lt;- Back to Home
-      </Link>
-
+      {/* Confirmation Dialog for Clearing Keypair */}
       <ConfirmDialog
         isOpen={showClearConfirm}
         title="Clear Keypair"

@@ -7,6 +7,7 @@ import {
 } from "zustand/middleware";
 import { type KeyPair } from "./types";
 import { NDKPrivateKeySigner } from "@nostr-dev-kit/ndk";
+// Don't import useAccountsStore directly - we'll use it from code that uses this hook
 
 // Initialize the WASM module (still needed for signing/verifying)
 let initPromise: Promise<any> | null = null;
@@ -36,16 +37,15 @@ interface UserState {
   clearKeyPair: () => void;
 }
 
-// Define the type for the persisted part of the state
+// For backward compatibility, we'll maintain the keyPair in local storage
 type PersistedUserState = Pick<UserState, "keyPair">;
 
 // Explicitly type the state creator and persist options
-// Note: The type arguments for PersistOptions need the base state and the persisted state
 type UserPersist = (
   config: StateCreator<UserState>,
   options: Omit<PersistOptions<UserState, PersistedUserState>, "storage"> & {
     storage: PersistStorage<PersistedUserState> | undefined;
-  },
+  }
 ) => StateCreator<UserState>;
 
 export const useUserStore = create<UserState>(
@@ -54,14 +54,15 @@ export const useUserStore = create<UserState>(
       keyPair: null,
       isLoadingKeyPair: false,
 
+      // We'll keep this simple now and handle the accounts synchronization elsewhere
       generateAndSetKeyPair: async () => {
-        if (get().isLoadingKeyPair || get().keyPair) return;
+        if (get().isLoadingKeyPair) return;
         set({ isLoadingKeyPair: true });
+
         try {
-          // Initialize WASM lazily
           await initNostringer();
 
-          // Generate keys using NDK
+          // Generate keys using NDK (as before)
           const signer = NDKPrivateKeySigner.generate();
           const nsec = signer.nsec;
           if (!nsec) {
@@ -80,6 +81,9 @@ export const useUserStore = create<UserState>(
           };
 
           set({ keyPair, isLoadingKeyPair: false });
+
+          // We'll leave it to components to sync this with accounts store
+          // through a useEffect
         } catch (error) {
           console.error("Failed to generate key pair:", error);
           set({ isLoadingKeyPair: false });
@@ -88,6 +92,7 @@ export const useUserStore = create<UserState>(
 
       setKeyPair: (keyPair: KeyPair | null) => {
         set({ keyPair });
+        // We'll handle account syncing in components
       },
 
       clearKeyPair: () => {
@@ -97,8 +102,7 @@ export const useUserStore = create<UserState>(
     {
       name: "ringable-user-storage",
       storage: createJSONStorage(() => localStorage),
-      // Use Pick to correctly type the partialized state
       partialize: (state): PersistedUserState => ({ keyPair: state.keyPair }),
-    },
-  ),
+    }
+  )
 );

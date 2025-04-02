@@ -7,6 +7,7 @@ import { Press_Start_2P } from "next/font/google"; // Import pixel font
 import NextLink from "next/link"; // Import with different name
 import type { LinkProps } from "next/link"; // Import props type
 import { ToastProvider } from "@repo/ui"; // Import ToastProvider
+import { AccountSwitcherWrapper } from "../components/AccountSwitcherWrapper";
 
 // const inter = Inter({ subsets: ["latin"] });
 const pressStart2P = Press_Start_2P({
@@ -93,26 +94,31 @@ export default function RootLayout({
               >
                 RINGABLE
               </Link>
-              <nav className="flex gap-3 md:gap-4 items-center">
-                <Link
-                  href="/rings"
-                  className="text-xs md:text-sm hover:text-pixel-accent hover:underline"
-                >
-                  Rings
-                </Link>
-                <Link
-                  href="/proposals/new"
-                  className="text-xs md:text-sm hover:text-pixel-accent hover:underline"
-                >
-                  New Proposal
-                </Link>
-                <Link
-                  href="/settings"
-                  className="text-xs md:text-sm hover:text-pixel-accent hover:underline"
-                >
-                  Settings
-                </Link>
-              </nav>
+              <div className="flex gap-2 md:gap-4 items-center">
+                {/* Account Switcher */}
+                <AccountSwitcherWrapper />
+                
+                <nav className="flex gap-3 md:gap-4 items-center">
+                  <Link
+                    href="/rings"
+                    className="text-xs md:text-sm hover:text-pixel-accent hover:underline"
+                  >
+                    Rings
+                  </Link>
+                  <Link
+                    href="/proposals/new"
+                    className="text-xs md:text-sm hover:text-pixel-accent hover:underline"
+                  >
+                    New Proposal
+                  </Link>
+                  <Link
+                    href="/settings"
+                    className="text-xs md:text-sm hover:text-pixel-accent hover:underline"
+                  >
+                    Settings
+                  </Link>
+                </nav>
+              </div>
             </header>
             <main className="min-h-[60vh] py-2">{children}</main>{" "}
             {/* Added padding */}
